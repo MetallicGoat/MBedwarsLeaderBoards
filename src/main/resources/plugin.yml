@@ -1,0 +1,8 @@
+name: MLeaderBoardsAddon
+version: 0.0.1
+author: MetallicGoat
+main: me.metallicgoat.bedwarsleaderboards.LeaderboardsPlugin
+description: Adds leaderboards placeholders to MBedwars
+api-version: 1.13
+depend: [ MBedwars ]
+softdepend: [ PlaceholderAPI ]

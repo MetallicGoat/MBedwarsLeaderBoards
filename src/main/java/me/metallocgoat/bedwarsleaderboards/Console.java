@@ -1,19 +1,17 @@
 package me.metallocgoat.bedwarsleaderboards;
 
-import me.metallicgoat.tweaksaddon.MBedwarsTweaksPlugin;
-
 public class Console {
 
   public static void printError(String error) {
-    MBedwarsTweaksPlugin.getInstance().getLogger().severe(error);
+    LeaderboardsPlugin.getInstance().getLogger().severe(error);
   }
 
   public static void printWarn(String warn) {
-    MBedwarsTweaksPlugin.getInstance().getLogger().warning(warn);
+    LeaderboardsPlugin.getInstance().getLogger().warning(warn);
   }
 
   public static void printInfo(String info) {
-    MBedwarsTweaksPlugin.getInstance().getLogger().info(info);
+    LeaderboardsPlugin.getInstance().getLogger().info(info);
   }
 
   public static void printWarn(String... strings) {
