@@ -6,14 +6,15 @@ import de.marcely.bedwars.api.player.PlayerProperties;
 import de.marcely.bedwars.api.player.PlayerStatSet;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +25,13 @@ public class LeaderboardsCache implements Listener {
   public static Map<PlayerStatSet, SoftReference<LeaderboardFetchResult>> fetchResults = new ConcurrentHashMap<>();
   public static Map<UUID, Map<PlayerStatSet, Integer>> playerRanks = new ConcurrentHashMap<>();
 
-  public static int getPlayerRank(OfflinePlayer player, PlayerStatSet statSet) {
+  public static @Nullable Integer getPlayerRank(OfflinePlayer player, PlayerStatSet statSet) {
+    final UUID uuid = player.getUniqueId();
+
+    // Player is not yet cached
+    if (!playerRanks.containsKey(uuid))
+      return null;
+
     return playerRanks.get(player.getUniqueId()).get(statSet);
   }
 
@@ -45,17 +52,13 @@ public class LeaderboardsCache implements Listener {
   // Cache the new player
   @EventHandler
   public void onJoin(PlayerJoinEvent event) {
-    // Add temporary dummy data (Until next re-cache)
-    if (!playerRanks.containsKey(event.getPlayer().getUniqueId())) {
-      final int playerRank = playerRanks.size() + 1; // Make em last place, they are new
+    cachePlayer(event.getPlayer());
+  }
 
-      final Map<PlayerStatSet, Integer> setRanks = new HashMap<>();
-
-      for (PlayerStatSet statSet : PlayerDataAPI.get().getRegisteredStatSets())
-        setRanks.put(statSet, playerRank);
-
-      playerRanks.put(event.getPlayer().getUniqueId(), setRanks);
-    }
+  // We don't want him no more
+  @EventHandler
+  public void onLeave(PlayerQuitEvent event) {
+    playerRanks.remove(event.getPlayer().getUniqueId());
   }
 
   public static void startAsyncCaching() {
@@ -74,14 +77,18 @@ public class LeaderboardsCache implements Listener {
 
       // Cache all player standings
       {
-        for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
-          for (PlayerStatSet statSet : PlayerDataAPI.get().getRegisteredStatSets()) {
-            PlayerDataAPI.get().fetchLeaderboardPosition(player, statSet, position -> {
-              playerRanks.computeIfAbsent(player.getUniqueId(), k -> new ConcurrentHashMap<>()).put(statSet, position);
-            });
-          }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+          cachePlayer(player);
         }
       }
     }, 0L, 20 * 60L * 10); // Cache every 10 min
+  }
+
+  private static void cachePlayer(Player player){
+    for (PlayerStatSet statSet : PlayerDataAPI.get().getRegisteredStatSets()) {
+      PlayerDataAPI.get().fetchLeaderboardPosition(player, statSet, position -> {
+        playerRanks.computeIfAbsent(player.getUniqueId(), k -> new ConcurrentHashMap<>()).put(statSet, position);
+      });
+    }
   }
 }

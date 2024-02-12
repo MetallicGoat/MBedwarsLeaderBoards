@@ -69,7 +69,13 @@ public class Placeholders extends PlaceholderExpansion {
       }
 
       case "playerposition": {
-        return String.valueOf(LeaderboardsCache.getPlayerRank(offlinePlayer, statSet));
+        final Integer position = LeaderboardsCache.getPlayerRank(offlinePlayer, statSet);
+
+        if (position != null)
+          return String.valueOf(position);
+
+        // Its possible the player joined, it its stilling being async cached
+        return "Loading...";
       }
 
       default:
