@@ -1,4 +1,4 @@
-package me.metallocgoat.bedwarsleaderboards;
+package me.metallicgoat.bedwarsleaderboards;
 
 public class Console {
 

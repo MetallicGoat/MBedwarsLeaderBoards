@@ -1,4 +1,4 @@
-package me.metallocgoat.bedwarsleaderboards;
+package me.metallicgoat.bedwarsleaderboards;
 
 import de.marcely.bedwars.api.player.PlayerDataAPI;
 import de.marcely.bedwars.api.player.PlayerProperties;
@@ -32,22 +32,52 @@ public class Placeholders extends PlaceholderExpansion {
     return this.plugin.getDescription().getVersion();
   }
 
+  // %MBLeaderboards_playeratposition-<statId>-<position>%
+  // %MBLeaderboards_playerposition-<statId>%
   @Override
   public String onRequest(OfflinePlayer offlinePlayer, @NotNull String params) {
     final String[] parts = params.split("-");
+    final int size = parts.length;
 
-    final PlayerStatSet statSet = getPlayerStatsSet(parts[0]);
-    final Integer position = parseInt(parts[1]);
+    // Missing parameters
+    if (size < 2)
+      return null;
 
-    if (statSet == null || position == null)
-      return "INVALID PLACEHOLDER"; // Incorrect placeholder
+    final String placeholderType = parts[0].toLowerCase();
+    final PlayerStatSet statSet = getPlayerStatsSet(parts[1].toLowerCase());
 
-    final PlayerProperties playerProperties = LeaderboardsCache.getPlayerAtPos(statSet, position);
+    // Invalid stat ID
+    if (statSet == null)
+      return null;
 
-    return Bukkit.getOfflinePlayer(playerProperties.getPlayerUUID()).getName();
+    switch (placeholderType) {
+      case "playeratposition": {
+        if (size < 3)
+          return null;
+
+        final Integer position = parseInt(parts[2]);
+
+        if (position == null)
+          return null;
+
+        final PlayerProperties playerProperties = LeaderboardsCache.getPlayerAtPos(statSet, position);
+
+        if (playerProperties == null)
+          return "UNKNOWN";
+
+        return Bukkit.getOfflinePlayer(playerProperties.getPlayerUUID()).getName();
+      }
+
+      case "playerposition": {
+        return String.valueOf(LeaderboardsCache.getPlayerRank(offlinePlayer, statSet));
+      }
+
+      default:
+        return null;
+    }
   }
 
-  private Integer parseInt(String val) {
+  private @Nullable Integer parseInt(String val) {
     try {
       return Integer.parseInt(val);
     } catch (NumberFormatException exception) {

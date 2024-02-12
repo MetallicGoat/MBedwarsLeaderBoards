@@ -1,4 +1,4 @@
-package me.metallocgoat.bedwarsleaderboards;
+package me.metallicgoat.bedwarsleaderboards;
 
 import de.marcely.bedwars.api.BedwarsAPI;
 import lombok.Getter;
@@ -23,6 +23,8 @@ public class LeaderboardsPlugin extends JavaPlugin {
       return;
     if (!registerAddon())
       return;
+
+    addon.registerEvents();
 
     final PluginDescriptionFile pdf = this.getDescription();
 
