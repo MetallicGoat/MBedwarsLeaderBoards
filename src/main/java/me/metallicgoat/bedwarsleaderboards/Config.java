@@ -19,7 +19,7 @@ public class Config {
   public static String uncachedPosition = "UNCACHED POSITION";
   public static String dataLoading = "Loading...";
 
-  private static final byte VERSION = 1;
+  private static final byte VERSION = 0;
 
   private static File getFile(LeaderboardsPlugin plugin) {
     return new File(LeaderboardsPlugin.getAddon().getDataFolder(), "config.yml");
@@ -79,6 +79,7 @@ public class Config {
 
     config.addComment("PLACEHOLDERS:");
     config.addComment("---> %MBLeaderboards_playeratposition-<statId>-<position>%");
+    config.addComment("---> %MBLeaderboards_valueatposition-<statId>-<position>%");
     config.addComment("---> %MBLeaderboards_playerposition-<statId>%");
 
     config.addEmptyLine();

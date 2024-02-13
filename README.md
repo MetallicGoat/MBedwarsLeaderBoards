@@ -16,6 +16,7 @@ Note: <statId> should be replaced with the id of the stat registered with MBedwa
 For example, if we are talking about the kills stat you should replace it with `bedwars:kills`
 ```
   %MBLeaderboards_playeratposition-<statId>-<position>%
+  %MBLeaderboards_valueatposition-<statId>-<position>%
   %MBLeaderboards_playerposition-<statId>%
 ```
 
