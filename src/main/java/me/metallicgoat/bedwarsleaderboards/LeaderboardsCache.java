@@ -69,7 +69,7 @@ public class LeaderboardsCache implements Listener {
       // Cache leaderboard ranking results
       {
         for (PlayerStatSet stats : Util.getSupportedStats()) {
-          PlayerDataAPI.get().fetchLeaderboard(stats, 1, 15, result -> {
+          PlayerDataAPI.get().fetchLeaderboard(stats, 1, Config.positionsCached, result -> {
             fetchResults.put(stats, new SoftReference<>(result));
           });
         }
@@ -81,7 +81,7 @@ public class LeaderboardsCache implements Listener {
           cachePlayer(player);
         }
       }
-    }, 0L, 20L * 60 * 10); // Cache every 10 min
+    }, 0L, 20L * 60 * Config.reCacheMinutes); // Cache every 10 min
   }
 
   private static void cachePlayer(Player player){

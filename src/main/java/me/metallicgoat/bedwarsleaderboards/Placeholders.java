@@ -1,5 +1,6 @@
 package me.metallicgoat.bedwarsleaderboards;
 
+import de.marcely.bedwars.api.message.Message;
 import de.marcely.bedwars.api.player.PlayerProperties;
 import de.marcely.bedwars.api.player.PlayerStatSet;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -59,10 +60,15 @@ public class Placeholders extends PlaceholderExpansion {
         if (position == null)
           return null;
 
+        // Trying to parse a placeholder for a position that is not cached
+        if (position > Config.positionsCached)
+          return Message.build(Config.uncachedPosition).done(offlinePlayer.getPlayer());
+
         final PlayerProperties playerProperties = LeaderboardsCache.getPlayerAtPos(statSet, position);
 
+        // This is no player at this rank!
         if (playerProperties == null)
-          return "UNKNOWN";
+          return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
 
         return Bukkit.getOfflinePlayer(playerProperties.getPlayerUUID()).getName();
       }
@@ -74,7 +80,7 @@ public class Placeholders extends PlaceholderExpansion {
           return String.valueOf(position);
 
         // Its possible the player joined, it its stilling being async cached
-        return "Loading...";
+        return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
       }
 
       default:
