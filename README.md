@@ -1,4 +1,5 @@
-# MBLeaderboards - PAPI Leaderboards placeholders for MBedwars
+# MBLeaderboards
+### PAPI Leaderboards placeholders for MBedwars
 MBedwars addon to add leaderboards placeholders for MBedwars!
 
 ## How does it work?

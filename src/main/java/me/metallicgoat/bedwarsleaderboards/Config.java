@@ -54,11 +54,11 @@ public class Config {
 
     // read it
     reCacheMinutes = config.getLong("re-cache-minutes", reCacheMinutes);
-    reCacheMinutes = config.getInt("positions-cached", positionsCached);
+    positionsCached = config.getInt("positions-cached", positionsCached);
 
     unfilledRank = config.getString("unfilled-rank", unfilledRank);
     uncachedPosition = config.getString("uncached-position", uncachedPosition);
-    dataLoading = config.getString("positions-cached", dataLoading);
+    dataLoading = config.getString("data-loading", dataLoading);
 
     // auto update file if newer version
     {
