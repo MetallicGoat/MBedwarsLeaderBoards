@@ -1,6 +1,5 @@
 package me.metallicgoat.bedwarsleaderboards;
 
-import de.marcely.bedwars.api.player.PlayerDataAPI;
 import de.marcely.bedwars.api.player.PlayerProperties;
 import de.marcely.bedwars.api.player.PlayerStatSet;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -92,7 +91,7 @@ public class Placeholders extends PlaceholderExpansion {
   }
 
   private @Nullable PlayerStatSet getPlayerStatsSet(String name){
-    for (PlayerStatSet statsSet : PlayerDataAPI.get().getRegisteredStatSets()){
+    for (PlayerStatSet statsSet : Util.getSupportedStats()){
       if (statsSet.getId().equals(name)){
         return statsSet;
       }

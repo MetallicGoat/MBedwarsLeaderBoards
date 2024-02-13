@@ -68,8 +68,8 @@ public class LeaderboardsCache implements Listener {
     cacheTask = Bukkit.getScheduler().runTaskTimerAsynchronously(LeaderboardsPlugin.getInstance(), () -> {
       // Cache leaderboard ranking results
       {
-        for (PlayerStatSet stats : PlayerDataAPI.get().getRegisteredStatSets()) {
-          PlayerDataAPI.get().fetchLeaderboard(stats, 1, 20, result -> {
+        for (PlayerStatSet stats : Util.getSupportedStats()) {
+          PlayerDataAPI.get().fetchLeaderboard(stats, 1, 15, result -> {
             fetchResults.put(stats, new SoftReference<>(result));
           });
         }
@@ -81,11 +81,11 @@ public class LeaderboardsCache implements Listener {
           cachePlayer(player);
         }
       }
-    }, 0L, 20 * 60L * 10); // Cache every 10 min
+    }, 0L, 20L * 60 * 10); // Cache every 10 min
   }
 
   private static void cachePlayer(Player player){
-    for (PlayerStatSet statSet : PlayerDataAPI.get().getRegisteredStatSets()) {
+    for (PlayerStatSet statSet : Util.getSupportedStats()) {
       PlayerDataAPI.get().fetchLeaderboardPosition(player, statSet, position -> {
         playerRanks.computeIfAbsent(player.getUniqueId(), k -> new ConcurrentHashMap<>()).put(statSet, position);
       });

@@ -13,10 +13,14 @@ public class LeaderboardsAddon extends BedwarsAddon {
     this.plugin = plugin;
   }
 
+  @Override
+  public String getName() {
+    return plugin.getName();
+  }
+
   public void registerEvents() {
     final PluginManager manager = plugin.getServer().getPluginManager();
 
     manager.registerEvents(new LeaderboardsCache(), plugin);
   }
-
 }
