@@ -99,7 +99,7 @@ public class Placeholders extends PlaceholderExpansion {
         if (position != null)
           return String.valueOf(position);
 
-        // Its possible the player joined, it its stilling being async cached
+        // The player joined, but it's stilling being async cached
         return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
       }
 
@@ -117,7 +117,7 @@ public class Placeholders extends PlaceholderExpansion {
   }
 
   private @Nullable PlayerStatSet getPlayerStatsSet(String name){
-    for (PlayerStatSet statsSet : Util.getSupportedStats()){
+    for (PlayerStatSet statsSet : Config.getCachedStats()){
       if (statsSet.getId().equals(name)){
         return statsSet;
       }

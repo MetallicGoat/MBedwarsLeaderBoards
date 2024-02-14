@@ -68,7 +68,7 @@ public class LeaderboardsCache implements Listener {
     cacheTask = Bukkit.getScheduler().runTaskTimerAsynchronously(LeaderboardsPlugin.getInstance(), () -> {
       // Cache leaderboard ranking results
       {
-        for (PlayerStatSet stats : Util.getSupportedStats()) {
+        for (PlayerStatSet stats : Config.getCachedStats()) {
           PlayerDataAPI.get().fetchLeaderboard(stats, 1, Config.positionsCached, result -> {
             fetchResults.put(stats, new SoftReference<>(result));
           });
@@ -85,7 +85,7 @@ public class LeaderboardsCache implements Listener {
   }
 
   private static void cachePlayer(Player player){
-    for (PlayerStatSet statSet : Util.getSupportedStats()) {
+    for (PlayerStatSet statSet : Config.getCachedStats()) {
       PlayerDataAPI.get().fetchLeaderboardPosition(player, statSet, position -> {
         playerRanks.computeIfAbsent(player.getUniqueId(), k -> new ConcurrentHashMap<>()).put(statSet, position);
       });

@@ -26,8 +26,6 @@ public class LeaderboardsPlugin extends JavaPlugin {
 
     addon.registerEvents();
 
-    Config.load(this);
-
     final PluginDescriptionFile pdf = this.getDescription();
 
     Console.printInfo(
@@ -39,6 +37,9 @@ public class LeaderboardsPlugin extends JavaPlugin {
     );
 
     BedwarsAPI.onReady(() -> {
+      // Load config before we cache!
+      Config.load(this);
+
       LeaderboardsCache.startAsyncCaching();
       (new Placeholders(this)).register();
     });

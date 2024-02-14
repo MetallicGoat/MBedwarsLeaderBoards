@@ -1,23 +1,45 @@
 package me.metallicgoat.bedwarsleaderboards;
 
+import de.marcely.bedwars.api.player.DefaultPlayerStatSet;
+import de.marcely.bedwars.api.player.PlayerDataAPI;
+import de.marcely.bedwars.api.player.PlayerStatSet;
 import de.marcely.bedwars.tools.YamlConfigurationDescriptor;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Config {
 
-  public static long reCacheMinutes = 10L;
-  public static int positionsCached = 15;
+  private static List<PlayerStatSet> cachedStats = null;
+  public static long reCacheMinutes = 15;
+  public static int positionsCached = 10;
 
   public static String unfilledRank = "-";
   public static String uncachedPosition = "UNCACHED POSITION";
   public static String dataLoading = "Loading...";
+
+  public static List<PlayerStatSet> getCachedStats() {
+    if (cachedStats == null) {
+      return Arrays.asList(
+          DefaultPlayerStatSet.WINS,
+          DefaultPlayerStatSet.WIN_STREAK,
+          DefaultPlayerStatSet.BEDS_DESTROYED,
+          DefaultPlayerStatSet.KILL_STREAK,
+          DefaultPlayerStatSet.FINAL_KILLS,
+          DefaultPlayerStatSet.KILLS
+      );
+    }
+
+    return cachedStats;
+  }
 
   private static final byte VERSION = 0;
 
@@ -59,6 +81,30 @@ public class Config {
     unfilledRank = config.getString("unfilled-rank", unfilledRank);
     uncachedPosition = config.getString("uncached-position", uncachedPosition);
     dataLoading = config.getString("data-loading", dataLoading);
+
+    {
+      final List<String> statIds = config.getStringList("cached-stats");
+
+      if (statIds != null) {
+        final List<PlayerStatSet> statSets = new ArrayList<>();
+
+        for (String statId : statIds) {
+          final String formattedStatID = statId.toLowerCase().replace("-", "_");
+
+          for (PlayerStatSet statSet : PlayerDataAPI.get().getRegisteredStatSets()) {
+            if (statSet.getId().equals(formattedStatID)) {
+              statSets.add(statSet);
+              break;
+            }
+          }
+        }
+
+        cachedStats = statSets;
+
+      } else {
+        Console.printConfigWarn("Missing config 'cached-stats'. We will only cache some of the default stats!", "config");
+      }
+    }
 
     // auto update file if newer version
     {
@@ -112,6 +158,18 @@ public class Config {
 
     config.addComment("What should be displayed if a requested placeholder is still in the process of being cached");
     config.set("data-loading", Config.dataLoading);
+
+    config.addEmptyLine();
+
+    config.addComment("What stats we should cache");
+    {
+      final List<String> statIds = new ArrayList<>();
+
+      for (PlayerStatSet statSet : getCachedStats())
+        statIds.add(statSet.getId());
+
+      config.set("cached-stats", statIds);
+    }
 
     // save
     getFile(plugin).getParentFile().mkdirs();
