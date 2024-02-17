@@ -11,6 +11,8 @@ public class LeaderboardsPlugin extends JavaPlugin {
   public static final String MIN_MBEDWARS_VER_NAME = "5.4";
 
   @Getter
+  private static LeaderboardsCache cache;
+  @Getter
   private static LeaderboardsPlugin instance;
   @Getter
   private static LeaderboardsAddon addon;
@@ -39,8 +41,7 @@ public class LeaderboardsPlugin extends JavaPlugin {
     BedwarsAPI.onReady(() -> {
       // Load config before we cache!
       Config.load(this);
-
-      LeaderboardsCache.startAsyncCaching();
+      cache = LeaderboardsCache.init();
       (new Placeholders(this)).register();
     });
   }

@@ -1,10 +1,7 @@
 package me.metallicgoat.bedwarsleaderboards;
 
 import de.marcely.bedwars.api.message.Message;
-import de.marcely.bedwars.api.player.PlayerDataAPI;
-import de.marcely.bedwars.api.player.PlayerProperties;
-import de.marcely.bedwars.api.player.PlayerStatSet;
-import de.marcely.bedwars.api.player.PlayerStats;
+import de.marcely.bedwars.api.player.*;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -67,11 +64,12 @@ public class Placeholders extends PlaceholderExpansion {
         if (position == null)
           return null;
 
-        // Trying to parse a placeholder for a position that is not cached
-        if (position > Config.positionsCached)
-          return Message.build(Config.uncachedPosition).done(offlinePlayer.getPlayer());
+        final LeaderboardFetchResult result = LeaderboardsPlugin.getCache().getCachedFetchResult(statSet, position);
 
-        final PlayerProperties playerProperties = LeaderboardsCache.getPlayerAtPos(statSet, position);
+        if (result == null)
+          return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
+
+        final PlayerProperties playerProperties = result.getPropertiesAtRank(position);
 
         // This is no player at this rank!
         if (playerProperties == null)
@@ -94,7 +92,7 @@ public class Placeholders extends PlaceholderExpansion {
       }
 
       case "playerposition": {
-        final Integer position = LeaderboardsCache.getPlayerRank(offlinePlayer, statSet);
+        final Integer position = LeaderboardsPlugin.getCache().getPlayerRank(offlinePlayer, statSet);
 
         if (position != null)
           return String.valueOf(position);
@@ -116,9 +114,9 @@ public class Placeholders extends PlaceholderExpansion {
     }
   }
 
-  private @Nullable PlayerStatSet getPlayerStatsSet(String name){
-    for (PlayerStatSet statsSet : Config.getCachedStats()){
-      if (statsSet.getId().equals(name)){
+  private @Nullable PlayerStatSet getPlayerStatsSet(String id){
+    for (PlayerStatSet statsSet : PlayerDataAPI.get().getRegisteredStatSets()){
+      if (statsSet.getId().equals(id)){
         return statsSet;
       }
     }

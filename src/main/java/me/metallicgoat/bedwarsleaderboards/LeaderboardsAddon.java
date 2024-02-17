@@ -21,6 +21,6 @@ public class LeaderboardsAddon extends BedwarsAddon {
   public void registerEvents() {
     final PluginManager manager = plugin.getServer().getPluginManager();
 
-    manager.registerEvents(new LeaderboardsCache(), plugin);
+    // manager.registerEvents(new LeaderboardsCache(), plugin);
   }
 }

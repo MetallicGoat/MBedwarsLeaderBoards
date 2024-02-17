@@ -1,8 +1,5 @@
 package me.metallicgoat.bedwarsleaderboards;
 
-import de.marcely.bedwars.api.player.DefaultPlayerStatSet;
-import de.marcely.bedwars.api.player.PlayerDataAPI;
-import de.marcely.bedwars.api.player.PlayerStatSet;
 import de.marcely.bedwars.tools.YamlConfigurationDescriptor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -12,34 +9,13 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Config {
 
-  private static List<PlayerStatSet> cachedStats = null;
-  public static long reCacheMinutes = 15;
-  public static int positionsCached = 10;
+  public static long reCacheMinutes = 2;
 
   public static String unfilledRank = "-";
-  public static String uncachedPosition = "UNCACHED POSITION";
   public static String dataLoading = "Loading...";
-
-  public static List<PlayerStatSet> getCachedStats() {
-    if (cachedStats == null) {
-      return Arrays.asList(
-          DefaultPlayerStatSet.WINS,
-          DefaultPlayerStatSet.WIN_STREAK,
-          DefaultPlayerStatSet.BEDS_DESTROYED,
-          DefaultPlayerStatSet.KILL_STREAK,
-          DefaultPlayerStatSet.FINAL_KILLS,
-          DefaultPlayerStatSet.KILLS
-      );
-    }
-
-    return cachedStats;
-  }
 
   private static final byte VERSION = 0;
 
@@ -76,35 +52,9 @@ public class Config {
 
     // read it
     reCacheMinutes = config.getLong("re-cache-minutes", reCacheMinutes);
-    positionsCached = config.getInt("positions-cached", positionsCached);
 
     unfilledRank = config.getString("unfilled-rank", unfilledRank);
-    uncachedPosition = config.getString("uncached-position", uncachedPosition);
     dataLoading = config.getString("data-loading", dataLoading);
-
-    {
-      final List<String> statIds = config.getStringList("cached-stats");
-
-      if (statIds != null) {
-        final List<PlayerStatSet> statSets = new ArrayList<>();
-
-        for (String statId : statIds) {
-          final String formattedStatID = statId.toLowerCase().replace("-", "_");
-
-          for (PlayerStatSet statSet : PlayerDataAPI.get().getRegisteredStatSets()) {
-            if (statSet.getId().equals(formattedStatID)) {
-              statSets.add(statSet);
-              break;
-            }
-          }
-        }
-
-        cachedStats = statSets;
-
-      } else {
-        Console.printConfigWarn("Missing config 'cached-stats'. We will only cache some of the default stats!", "config");
-      }
-    }
 
     // auto update file if newer version
     {
@@ -138,21 +88,9 @@ public class Config {
 
     config.addEmptyLine();
 
-    config.addComment("How many rankings should be cached at any given time.");
-    config.set("positions-cached", Config.positionsCached);
-
-    config.addEmptyLine();
-
     config.addComment("What should be returned if there is no player at a certian rank.");
     config.addComment("For example if you want the 10th position, but only 5 players have played");
     config.set("unfilled-rank", Config.unfilledRank);
-
-    config.addEmptyLine();
-
-    config.addComment("What should be returned if someone is requesting a placeholder for a rank that is not");
-    config.addComment("kept in cache as defined by 'positions-cached' config.");
-    config.addComment("NOTE: this is only related to the '%MBLeaderboards_playeratposition-<statId>-<position>%' placeholder");
-    config.set("uncached-position", Config.uncachedPosition);
 
     config.addEmptyLine();
 
@@ -160,16 +98,6 @@ public class Config {
     config.set("data-loading", Config.dataLoading);
 
     config.addEmptyLine();
-
-    config.addComment("What stats we should cache");
-    {
-      final List<String> statIds = new ArrayList<>();
-
-      for (PlayerStatSet statSet : getCachedStats())
-        statIds.add(statSet.getId());
-
-      config.set("cached-stats", statIds);
-    }
 
     // save
     getFile(plugin).getParentFile().mkdirs();
