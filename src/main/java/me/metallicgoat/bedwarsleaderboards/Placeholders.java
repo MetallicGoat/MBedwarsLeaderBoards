@@ -92,7 +92,7 @@ public class Placeholders extends PlaceholderExpansion {
       }
 
       case "playerposition": {
-        final Integer position = LeaderboardsPlugin.getCache().getPlayerRank(offlinePlayer, statSet);
+        final Integer position = LeaderboardsPlugin.getCache().getCachedPlayerRank(offlinePlayer.getUniqueId(), statSet);
 
         if (position != null)
           return String.valueOf(position);
