@@ -69,7 +69,7 @@ public class Config {
     {
       final String currentVersion = config.getString("file-version");
 
-      if (currentVersion.equals(LeaderboardsPlugin.getInstance().getDescription().getVersion()))
+      if (!currentVersion.equals(LeaderboardsPlugin.getInstance().getDescription().getVersion()))
         save(plugin);
     }
   }
@@ -86,6 +86,7 @@ public class Config {
     config.addComment("---> %MBLeaderboards_playeratposition-<statId>-<position>%");
     config.addComment("---> %MBLeaderboards_valueatposition-<statId>-<position>%");
     config.addComment("---> %MBLeaderboards_playerposition-<statId>%");
+    config.addComment("---> %MBLeaderboards_playerstat-<statId>%");
 
     config.addEmptyLine();
     config.addEmptyLine();

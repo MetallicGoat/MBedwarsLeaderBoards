@@ -28,4 +28,4 @@ You can also get leaderboards for periodic stats using the above placeholder.
 The Stat Id's of Periodic Stats are simple!
 Simply take the base stat id of an MBedwars stat, such as and append the id of the periodic stat separated by a colon. 
 For example weekly kills would be `weekly:bedwars:kills`, and monthly deaths would be `monthly:bedwars:deaths`.
-**NOTE: ** you will not be able to use periodic stat id's in the MBedwars placeholders, but you can get a players value using our provided placeholder: `%MBLeaderboards_playerstat-<statId>%`.
+**NOTE:** you will not be able to use periodic stat id's in the MBedwars placeholders, but you can get a players value using our provided placeholder: `%MBLeaderboards_playerstat-<statId>%`.
