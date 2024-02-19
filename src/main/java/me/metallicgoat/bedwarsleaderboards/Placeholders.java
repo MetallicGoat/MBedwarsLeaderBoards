@@ -36,6 +36,7 @@ public class Placeholders extends PlaceholderExpansion {
   // %MBLeaderboards_playeratposition-<statId>-<position>%
   // %MBLeaderboards_valueatposition-<statId>-<position>%
   // %MBLeaderboards_playerposition-<statId>%
+  // %MBLeaderboards_playerstat-<statId>%
   @Override
   public String onRequest(OfflinePlayer offlinePlayer, @NotNull String params) {
     final String[] parts = params.split("-");
@@ -99,6 +100,21 @@ public class Placeholders extends PlaceholderExpansion {
 
         // The player joined, but it's stilling being async cached
         return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
+      }
+
+      case "playerstat": {
+        final Optional<PlayerStats> optional = PlayerDataAPI.get().getStatsCached(offlinePlayer);
+
+        if (!optional.isPresent()) {
+          // load it async
+          PlayerDataAPI.get().getStats(offlinePlayer, (garbage) -> {
+          });
+
+          // return that it's still loading
+          return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
+        }
+
+        return statSet.getDisplayedValue(optional.get());
       }
 
       default:

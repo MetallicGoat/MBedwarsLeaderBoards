@@ -1,7 +1,10 @@
 package me.metallicgoat.bedwarsleaderboards;
 
 import de.marcely.bedwars.api.BedwarsAPI;
+import de.marcely.bedwars.api.player.PlayerDataAPI;
 import lombok.Getter;
+import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatSet;
+import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatResetter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,11 +42,19 @@ public class LeaderboardsPlugin extends JavaPlugin {
     );
 
     BedwarsAPI.onReady(() -> {
-      // Load config before we cache!
       Config.load(this);
-      cache = LeaderboardsCache.init();
+      PeriodicStatSet.registerAll();
+      PeriodicStatResetter.startResettingTask(); // Manages the reset of periodic stats
+      cache = new LeaderboardsCache();
       (new Placeholders(this)).register();
     });
+  }
+
+  @Override
+  public void onDisable() {
+    for (PeriodicStatSet statSet : PeriodicStatSet.getPeriodicStatSets()) {
+      PlayerDataAPI.get().unregisterStatSet(statSet);
+    }
   }
 
   private boolean checkMBedwars() {

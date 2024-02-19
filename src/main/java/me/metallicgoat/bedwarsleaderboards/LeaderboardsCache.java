@@ -30,6 +30,9 @@ public class LeaderboardsCache {
 
   // Trys to get a player rank, and caches it if it's not there
   public @Nullable LeaderboardFetchResult getCachedFetchResult(PlayerStatSet statSet, int rank) {
+    if (rank < 1)
+      return null;
+
     final CacheHolder<Integer, LeaderboardFetchResult> resultsBlockCache = getOrBuildCacheHolder(fetchResultsCache, statSet);
     final boolean needsReCache = resultsBlockCache.needsReCache();
 
@@ -67,21 +70,21 @@ public class LeaderboardsCache {
     return holder;
   }
 
-  private <K, V> Cache<K, V> buildCache(){
+  private static <Key, Value> Cache<Key, Value> buildCache(){
     return CacheBuilder.newBuilder()
         .expireAfterAccess(10, TimeUnit.MINUTES)
         .build();
   }
 
-  private class CacheHolder<K, V> {
-    private final Cache<K, V> cache = buildCache();
+  private static class CacheHolder<Key, Value> {
+    private final Cache<Key, Value> cache = buildCache();
     private long lastAccess = System.currentTimeMillis();
 
     public boolean needsReCache() {
       return ((System.currentTimeMillis() - lastAccess) / 1000 * 60) > Config.reCacheMinutes;
     }
 
-    public Cache<K, V> requestCache() {
+    public Cache<Key, Value> requestCache() {
       lastAccess = System.currentTimeMillis();
       return cache;
     }

@@ -9,15 +9,14 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.DayOfWeek;
 
 public class Config {
 
   public static long reCacheMinutes = 2;
-
   public static String unfilledRank = "-";
   public static String dataLoading = "Loading...";
-
-  private static final byte VERSION = 0;
+  public static DayOfWeek resetDay = DayOfWeek.SUNDAY;
 
   private static File getFile(LeaderboardsPlugin plugin) {
     return new File(LeaderboardsPlugin.getAddon().getDataFolder(), "config.yml");
@@ -56,11 +55,21 @@ public class Config {
     unfilledRank = config.getString("unfilled-rank", unfilledRank);
     dataLoading = config.getString("data-loading", dataLoading);
 
+    {
+      final String dayOfWeek = config.getString("weekly-reset-day", resetDay.name());
+
+      try {
+        resetDay = DayOfWeek.valueOf(dayOfWeek);
+      } catch (IllegalArgumentException e) {
+        Console.printConfigWarn("'" + dayOfWeek + "' is not a valid day of the week!", "Main");
+      }
+    }
+
     // auto update file if newer version
     {
-      final int currentVersion = config.getInt("file-version", -1);
+      final String currentVersion = config.getString("file-version");
 
-      if (currentVersion != VERSION)
+      if (currentVersion.equals(LeaderboardsPlugin.getInstance().getDescription().getVersion()))
         save(plugin);
     }
   }
@@ -69,7 +78,7 @@ public class Config {
     final YamlConfigurationDescriptor config = new YamlConfigurationDescriptor();
 
     config.addComment("Used for auto-updating the config file. Ignore it");
-    config.set("file-version", VERSION);
+    config.set("file-version", LeaderboardsPlugin.getInstance().getDescription().getVersion());
 
     config.addEmptyLine();
 
@@ -96,6 +105,11 @@ public class Config {
 
     config.addComment("What should be displayed if a requested placeholder is still in the process of being cached");
     config.set("data-loading", Config.dataLoading);
+
+    config.addEmptyLine();
+
+    config.addComment("What day of the week 'WEEKLY' stats will reset");
+    config.set("weekly-reset-day", resetDay.name());
 
     config.addEmptyLine();
 

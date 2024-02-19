@@ -1,6 +1,7 @@
 package me.metallicgoat.bedwarsleaderboards;
 
 import de.marcely.bedwars.api.BedwarsAddon;
+import me.metallicgoat.bedwarsleaderboards.periodicstats.StatChangeListener;
 import org.bukkit.plugin.PluginManager;
 
 public class LeaderboardsAddon extends BedwarsAddon {
@@ -21,6 +22,6 @@ public class LeaderboardsAddon extends BedwarsAddon {
   public void registerEvents() {
     final PluginManager manager = plugin.getServer().getPluginManager();
 
-    // manager.registerEvents(new LeaderboardsCache(), plugin);
+    manager.registerEvents(new StatChangeListener(), plugin);
   }
 }
