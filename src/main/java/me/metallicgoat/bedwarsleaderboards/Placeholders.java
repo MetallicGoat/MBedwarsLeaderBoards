@@ -5,6 +5,7 @@ import de.marcely.bedwars.api.player.*;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,7 +69,7 @@ public class Placeholders extends PlaceholderExpansion {
         final LeaderboardFetchResult result = LeaderboardsPlugin.getCache().getCachedFetchResult(statSet, position);
 
         if (result == null)
-          return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
+          return getDataLoadingMessage(offlinePlayer.getPlayer());
 
         final PlayerProperties playerProperties = result.getPropertiesAtRank(position);
 
@@ -88,7 +89,7 @@ public class Placeholders extends PlaceholderExpansion {
           // Cache da stats
           PlayerDataAPI.get().getStats(playerProperties.getPlayerUUID(), (stats) -> {});
 
-          return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
+          return getDataLoadingMessage(offlinePlayer.getPlayer());
         }
       }
 
@@ -99,7 +100,7 @@ public class Placeholders extends PlaceholderExpansion {
           return String.valueOf(position);
 
         // The player joined, but it's stilling being async cached
-        return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
+        return getDataLoadingMessage(offlinePlayer.getPlayer());
       }
 
       case "playerstat": {
@@ -111,7 +112,7 @@ public class Placeholders extends PlaceholderExpansion {
           });
 
           // return that it's still loading
-          return Message.build(Config.dataLoading).done(offlinePlayer.getPlayer());
+          return getDataLoadingMessage(offlinePlayer.getPlayer());
         }
 
         return statSet.getDisplayedValue(optional.get());
@@ -120,6 +121,10 @@ public class Placeholders extends PlaceholderExpansion {
       default:
         return null;
     }
+  }
+  
+  private String getDataLoadingMessage(Player player) {
+    return Message.build(Config.dataLoading).done(player);
   }
 
   private @Nullable Integer parseInt(String val) {

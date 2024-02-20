@@ -3,8 +3,8 @@ package me.metallicgoat.bedwarsleaderboards;
 import de.marcely.bedwars.api.BedwarsAPI;
 import de.marcely.bedwars.api.player.PlayerDataAPI;
 import lombok.Getter;
-import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatSet;
 import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatResetter;
+import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatSet;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +19,7 @@ public class LeaderboardsPlugin extends JavaPlugin {
   private static LeaderboardsPlugin instance;
   @Getter
   private static LeaderboardsAddon addon;
+  private Placeholders placeholders;
 
   @Override
   public void onEnable() {
@@ -42,19 +43,30 @@ public class LeaderboardsPlugin extends JavaPlugin {
     );
 
     BedwarsAPI.onReady(() -> {
+      // Load before we register all the stats (user might disable some)
       Config.load(this);
+
       PeriodicStatSet.registerAll();
       PeriodicStatResetter.startResettingTask(); // Manages the reset of periodic stats
       cache = new LeaderboardsCache();
-      (new Placeholders(this)).register();
+
+      if (placeholders == null && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        placeholders = new Placeholders(this);
+        placeholders.register();
+        Console.printWarn("Registered Leaderboards placeholders");
+      } else {
+        Console.printWarn("PAPI not installed! PAPI Placeholders will not work!");
+      }
     });
   }
 
   @Override
   public void onDisable() {
-    for (PeriodicStatSet statSet : PeriodicStatSet.getPeriodicStatSets()) {
+    for (PeriodicStatSet statSet : PeriodicStatSet.getPeriodicStatSets())
       PlayerDataAPI.get().unregisterStatSet(statSet);
-    }
+
+    if (placeholders != null)
+      placeholders.unregister();
   }
 
   private boolean checkMBedwars() {

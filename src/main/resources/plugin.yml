@@ -4,4 +4,5 @@ author: MetallicGoat
 main: me.metallicgoat.bedwarsleaderboards.LeaderboardsPlugin
 description: Adds leaderboards placeholders to MBedwars
 api-version: 1.13
-depend: [ MBedwars, PlaceholderAPI ]
+depend: [ MBedwars ]
+softdepend: [ PlaceholderAPI ]
