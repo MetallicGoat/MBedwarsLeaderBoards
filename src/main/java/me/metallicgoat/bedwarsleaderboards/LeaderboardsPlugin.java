@@ -19,7 +19,8 @@ public class LeaderboardsPlugin extends JavaPlugin {
   private static LeaderboardsPlugin instance;
   @Getter
   private static LeaderboardsAddon addon;
-  private Placeholders placeholders;
+  private static Placeholders placeholders;
+  private static boolean loaded = false;
 
   @Override
   public void onEnable() {
@@ -43,19 +44,22 @@ public class LeaderboardsPlugin extends JavaPlugin {
     );
 
     BedwarsAPI.onReady(() -> {
-      // Load before we register all the stats (user might disable some)
-      Config.load(this);
+      if (!loaded) {
+        // Load Config before we register all the stats (user might disable some)
+        Config.load(this);
 
-      PeriodicStatSet.registerAll();
-      PeriodicStatResetter.startResettingTask(); // Manages the reset of periodic stats
-      cache = new LeaderboardsCache();
+        PeriodicStatSet.registerAll();
+        PeriodicStatResetter.startResettingTask(); // Manages the reset of periodic stats
+        cache = new LeaderboardsCache();
 
-      if (placeholders == null && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-        placeholders = new Placeholders(this);
-        placeholders.register();
-        Console.printWarn("Registered Leaderboards placeholders");
-      } else {
-        Console.printWarn("PAPI not installed! PAPI Placeholders will not work!");
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+          placeholders = new Placeholders(this);
+          placeholders.register();
+        } else {
+          Console.printWarn("PAPI not installed! PAPI Placeholders will not work!");
+        }
+
+        loaded = true;
       }
     });
   }

@@ -4,7 +4,9 @@ import de.marcely.bedwars.api.player.PlayerDataAPI;
 import de.marcely.bedwars.api.player.PlayerStatSet;
 import de.marcely.bedwars.api.player.PlayerStats;
 import lombok.Getter;
+import me.metallicgoat.bedwarsleaderboards.Config;
 import me.metallicgoat.bedwarsleaderboards.LeaderboardsPlugin;
+import me.metallicgoat.bedwarsleaderboards.Util;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -35,7 +37,7 @@ public class PeriodicStatSet implements PlayerStatSet {
 
   @Override
   public String getName(CommandSender sender) {
-    return capitalizeFirstLetter(capitalizeFirstLetter(periodicType.name()) + " " + this.getName(sender));
+    return capitalize(periodicType.name()) + " " + originalStatSet.getName(sender);
   }
 
   @Override
@@ -59,32 +61,29 @@ public class PeriodicStatSet implements PlayerStatSet {
       stats.set(this.id, value);
   }
 
-  private String capitalizeFirstLetter(String input) {
-    if (input == null || input.isEmpty())
-      return input;
+  private String capitalize(String str) {
+    if (str == null || str.isEmpty())
+      return str;
 
-    return input.substring(0, 1).toUpperCase() + input.substring(1).toLowerCase();
+    return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
   }
 
   public static void registerAll() {
-    for (PlayerStatSet statSet : new ArrayList<>(PlayerDataAPI.get().getRegisteredStatSets())) {
-      if (isPeriodicStat(statSet))
+    if (!Config.periodicStatsEnabled)
+      return;
+
+    for (String statId : Config.statsTrackedPeriodically) {
+      final PlayerStatSet statSet = Util.getStatsSetById(statId);
+
+      if (statSet == null || Util.isPeriodicStat(statSet))
         continue;
 
-      for (PeriodicStatSetType type : PeriodicStatSetType.values()) {
+      for (PeriodicStatSetType type : Config.periodicStatsTracked) {
         final PeriodicStatSet periodicStatSet = new PeriodicStatSet(type, statSet, type.getId(statSet));
 
         periodicStatSets.add(periodicStatSet);
         PlayerDataAPI.get().registerStatSet(periodicStatSet);
       }
     }
-  }
-
-  private static boolean isPeriodicStat(PlayerStatSet statSet) {
-    for (PeriodicStatSetType type : PeriodicStatSetType.values())
-      if (type.isOfType(statSet.getId()))
-        return true;
-
-    return false;
   }
 }
