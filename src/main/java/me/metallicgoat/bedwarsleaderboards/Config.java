@@ -112,7 +112,7 @@ public class Config {
 
           if (periodicTypeString != null) {
             try {
-              periodicType = PeriodicType.valueOf(periodicTypeString);
+              periodicType = PeriodicType.valueOf(periodicTypeString.toUpperCase());
             } catch (IllegalArgumentException ignored) {
               Console.printConfigWarn("'" + periodicTypeString + "' is not a valid periodic type! Failed to add custom stat '" + statId + "'", "Main");
               continue;
@@ -144,6 +144,11 @@ public class Config {
 
     config.addComment("Used for auto-updating the config file. Ignore it");
     config.set("file-version", LeaderboardsPlugin.getInstance().getDescription().getVersion());
+
+    config.addEmptyLine();
+
+    config.addComment("SETUP GUIDE: https://github.com/MetallicGoat/MBedwarsLeaderBoards");
+    config.addComment("SUPPORT: https://discord.gg/57SdFW2E3F");
 
     config.addEmptyLine();
 
