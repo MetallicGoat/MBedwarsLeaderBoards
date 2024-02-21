@@ -1,7 +1,7 @@
 package me.metallicgoat.bedwarsleaderboards.periodicstats;
 
 import de.marcely.bedwars.api.player.PlayerDataAPI;
-import de.marcely.bedwars.api.player.PlayerStatSet;
+import me.metallicgoat.bedwarsleaderboards.Config;
 import me.metallicgoat.bedwarsleaderboards.Console;
 import me.metallicgoat.bedwarsleaderboards.LeaderboardsPlugin;
 import org.bukkit.Bukkit;
@@ -18,13 +18,16 @@ public class PeriodicStatResetter {
   private static BukkitTask resetTask;
 
   public static void startResettingTask() {
-    if (resetTask != null)
+    if (resetTask != null || Config.customStatsTracking)
       return;
 
     resetTask = Bukkit.getScheduler().runTaskTimerAsynchronously(LeaderboardsPlugin.getInstance(), () -> {
       PlayerDataAPI.get().getProperties(new UUID(0, 0), (properties) -> {
 
-        for (PeriodicStatSetType type : PeriodicStatSetType.values()) {
+        for (PeriodicType type : PeriodicType.values()) {
+          if (type == PeriodicType.NEVER)
+            continue;
+
           final String resetKey = type.getResetKey();
           final Optional<String> optionalDate = properties.get(resetKey);
 
@@ -42,7 +45,7 @@ public class PeriodicStatResetter {
           properties.set(resetKey, getCurrentDate());
 
           // Reset all periodic stats of this type
-          for (PeriodicStatSet statSet : PeriodicStatSet.getPeriodicStatSets()) {
+          for (CustomTrackedStatSet statSet : Config.customStatSets) {
             if (statSet.getPeriodicType() == type) {
               purgePlayerStatsSet(statSet);
             }
@@ -57,10 +60,7 @@ public class PeriodicStatResetter {
   }
 
   // Resets all sets of a certian type
-  private static void purgePlayerStatsSet(PlayerStatSet statSet) {
-    if (!(statSet instanceof PeriodicStatSet))
-      throw new RuntimeException("Only supports resetting Periodic Stats");
-
+  private static void purgePlayerStatsSet(CustomTrackedStatSet statSet) {
     for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
       PlayerDataAPI.get().getStats(player, playerStats -> {
         statSet.setValue(playerStats, 0);

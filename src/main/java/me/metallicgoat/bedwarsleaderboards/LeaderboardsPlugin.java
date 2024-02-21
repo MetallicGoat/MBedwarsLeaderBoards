@@ -4,7 +4,7 @@ import de.marcely.bedwars.api.BedwarsAPI;
 import de.marcely.bedwars.api.player.PlayerDataAPI;
 import lombok.Getter;
 import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatResetter;
-import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatSet;
+import me.metallicgoat.bedwarsleaderboards.periodicstats.CustomTrackedStatSet;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -48,7 +48,7 @@ public class LeaderboardsPlugin extends JavaPlugin {
         // Load Config before we register all the stats (user might disable some)
         Config.load(this);
 
-        PeriodicStatSet.registerAll();
+        CustomTrackedStatSet.registerAll();
         PeriodicStatResetter.startResettingTask(); // Manages the reset of periodic stats
         cache = new LeaderboardsCache();
 
@@ -66,7 +66,7 @@ public class LeaderboardsPlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    for (PeriodicStatSet statSet : PeriodicStatSet.getPeriodicStatSets())
+    for (CustomTrackedStatSet statSet : Config.customStatSets)
       PlayerDataAPI.get().unregisterStatSet(statSet);
 
     if (placeholders != null)

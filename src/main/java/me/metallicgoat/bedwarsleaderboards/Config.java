@@ -1,8 +1,13 @@
 package me.metallicgoat.bedwarsleaderboards;
 
-import de.marcely.bedwars.api.player.DefaultPlayerStatSet;
+import de.marcely.bedwars.api.arena.picker.ArenaPickerAPI;
+import de.marcely.bedwars.api.arena.picker.condition.ArenaConditionGroup;
+import de.marcely.bedwars.api.exception.ArenaConditionParseException;
+import de.marcely.bedwars.api.player.PlayerStatSet;
 import de.marcely.bedwars.tools.YamlConfigurationDescriptor;
-import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicStatSetType;
+import me.metallicgoat.bedwarsleaderboards.periodicstats.CustomTrackedStatSet;
+import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicType;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -21,17 +26,13 @@ public class Config {
   public static long reCacheMinutes = 2;
   public static String unfilledRank = "-";
   public static String dataLoading = "%placeholderapi_stats_loading%";
-  public static boolean periodicStatsEnabled = false;
+  public static boolean customStatsTracking = false;
   public static DayOfWeek resetDay = DayOfWeek.SUNDAY;
 
-  public static List<PeriodicStatSetType> periodicStatsTracked = Arrays.asList(PeriodicStatSetType.values());
-
-  public static List<String> statsTrackedPeriodically = Arrays.asList(
-      DefaultPlayerStatSet.WINS.getId(),
-      DefaultPlayerStatSet.KILLS.getId(),
-      DefaultPlayerStatSet.FINAL_KILLS.getId(),
-      DefaultPlayerStatSet.BEDS_DESTROYED.getId(),
-      DefaultPlayerStatSet.ROUNDS_PLAYED.getId()
+  public static List<CustomTrackedStatSet> customStatSets = Arrays.asList(
+      buildCustomStatSet("weekly:solos:kills", "Weekly Solos Kills", "bedwars:kills", PeriodicType.WEEKLY, "[players_per_team=1]"),
+      buildCustomStatSet("solos:kills", "Solos Kills", "bedwars:kills", null, "[players_per_team=1]"),
+      buildCustomStatSet("monthly:wins", "Monthly Wins", "bedwars:wins", PeriodicType.MONTHLY, null)
   );
 
   private static File getFile(LeaderboardsPlugin plugin) {
@@ -71,7 +72,7 @@ public class Config {
     unfilledRank = config.getString("unfilled-rank", unfilledRank);
     dataLoading = config.getString("data-loading", dataLoading);
 
-    periodicStatsEnabled = config.getBoolean("periodic-stats-enabled", periodicStatsEnabled);
+    customStatsTracking = config.getBoolean("custom-stat-tracking-enabled", customStatsTracking);
 
     {
       final String dayOfWeek = config.getString("weekly-reset-day", resetDay.name());
@@ -84,36 +85,50 @@ public class Config {
     }
 
     {
-      final List<PeriodicStatSetType> statTypes = new ArrayList<>();
+      if (config.contains("custom-stat-tracking")) {
+        final List<CustomTrackedStatSet> trackedStatSets = new ArrayList<>();
 
-      if (config.contains("periodic-stats-tracked")) {
-        for (String stringType : config.getStringList("periodic-stats-tracked")) {
-          try {
-            statTypes.add(PeriodicStatSetType.valueOf(stringType.toUpperCase()));
-          } catch (IllegalArgumentException e) {
-            Console.printConfigWarn("'" + stringType + "' is not a valid periodic stat set type!", "Main");
+        final ConfigurationSection customStatsSection = config.getConfigurationSection("custom-stat-tracking");
+
+        for (String statId : customStatsSection.getKeys(false)) {
+          final ConfigurationSection statSection = customStatsSection.getConfigurationSection(statId);
+
+          final String rawDisplayName = statSection.getString("display-name");
+          final String trackedStat = statSection.getString("tracked-stat");
+          final String periodicTypeString = statSection.getString("periodic-type");
+          final String restriction = statSection.getString("restriction");
+
+          if (rawDisplayName == null) {
+            Console.printConfigWarn("Display name is missing! Failed to add custom stat '" + statId + "'", "Main");
+            continue;
+          }
+
+          if (trackedStat == null) {
+            Console.printConfigWarn("The tracked stat is missing! Failed to add custom stat '" + statId + "'", "Main");
+            continue;
+          }
+
+          PeriodicType periodicType = null;
+
+          if (periodicTypeString != null) {
+            try {
+              periodicType = PeriodicType.valueOf(periodicTypeString);
+            } catch (IllegalArgumentException ignored) {
+              Console.printConfigWarn("'" + periodicTypeString + "' is not a valid periodic type! Failed to add custom stat '" + statId + "'", "Main");
+              continue;
+            }
+          }
+
+          final CustomTrackedStatSet customTrackedStatSet = buildCustomStatSet(statId, rawDisplayName, trackedStat, periodicType, restriction);
+
+          if (customTrackedStatSet != null) {
+            trackedStatSets.add(customTrackedStatSet);
           }
         }
 
-        periodicStatsTracked = statTypes;
+        customStatSets = trackedStatSets;
       }
     }
-
-    {
-      final List<String> statIds = new ArrayList<>();
-
-      if (config.contains("stats-tracked-periodically")) {
-        for (String statId : config.getStringList("stats-tracked-periodically")) {
-          if (Util.getStatsSetById(statId) != null)
-            statIds.add(statId);
-          else
-            Console.printConfigWarn("'" + statId + "' is not a registered stat!", "Main");
-        }
-
-        statsTrackedPeriodically = statIds;
-      }
-    }
-
 
     // auto update file if newer version
     {
@@ -164,12 +179,12 @@ public class Config {
     config.addEmptyLine();
     config.addEmptyLine();
 
-    config.addComment("======== Periodic Stats ========");
+    config.addComment("======== Custom Stat Tracking ========");
 
     config.addEmptyLine();
 
     config.addComment("If some stats should be tracked periodically. (eg. weekly kills stats)");
-    config.set("periodic-stats-enabled", periodicStatsEnabled);
+    config.set("custom-stat-tracking-enabled", customStatsTracking);
 
     config.addEmptyLine();
 
@@ -178,27 +193,23 @@ public class Config {
 
     config.addEmptyLine();
 
+    config.addComment("Custom stats MBLeaderboards will track");
     {
-      final List<String> typeNames = new ArrayList<>();
+      for (CustomTrackedStatSet customStat : customStatSets) {
+        final String path = "custom-stat-tracking." + customStat.getId() + ".";
 
-      for (PeriodicStatSetType type : periodicStatsTracked)
-        typeNames.add(type.name());
+        config.set(path + "display-name", customStat.getRawDisplayName());
+        config.set(path + "tracked-stat", customStat.getTrackedStatSet().getId());
 
-      config.addComment("Periodic stat types tracked");
+        if (customStat.getPeriodicType() != null)
+          config.set(path + "periodic-type", customStat.getPeriodicType().name());
 
-      // Display defaults in comment
-      for (PeriodicStatSetType type : PeriodicStatSetType.values())
-        config.addComment(" - " + type.name());
+        if (customStat.getStringRestriction() != null)
+          config.set(path + "restriction", customStat.getStringRestriction());
 
-      config.set("periodic-stats-tracked", typeNames);
+        config.addEmptyLine();
+      }
     }
-
-    config.addEmptyLine();
-
-    config.addComment("The stats that will actually get tracked");
-    config.set("stats-tracked-periodically", statsTrackedPeriodically);
-
-    config.addEmptyLine();
 
     // save
     getFile(plugin).getParentFile().mkdirs();
@@ -206,5 +217,29 @@ public class Config {
     try (Writer writer = Files.newBufferedWriter(getFile(plugin).toPath(), StandardCharsets.UTF_8)) {
       writer.write(config.saveToString());
     }
+  }
+
+  private static CustomTrackedStatSet buildCustomStatSet(String id, String rawDisplayNameName, String trackedSetId, PeriodicType type, String restrictionString) {
+    final PlayerStatSet trackedSet = Util.getStatsSetById(trackedSetId);
+
+    if (trackedSet == null) {
+      Console.printConfigWarn("Cannot track '" + trackedSetId + "'. Invalid id", "Main");
+      return null;
+    }
+
+    final ArenaConditionGroup restriction;
+
+    if (restrictionString != null) {
+      try {
+        restriction = ArenaPickerAPI.get().parseCondition(restrictionString);
+      } catch (ArenaConditionParseException e) {
+        Console.printConfigWarn("Invalid arena restriction '" + restrictionString + "'", "Main");
+        return null;
+      }
+    } else {
+      restriction = null;
+    }
+
+    return new CustomTrackedStatSet(id, rawDisplayNameName, trackedSet, type, restriction, restrictionString);
   }
 }

@@ -1,24 +1,16 @@
 package me.metallicgoat.bedwarsleaderboards.periodicstats;
 
-import de.marcely.bedwars.api.player.PlayerStatSet;
 import me.metallicgoat.bedwarsleaderboards.Config;
 
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 
-public enum PeriodicStatSetType {
+public enum PeriodicType {
   DAILY,
   WEEKLY,
   MONTHLY,
-  YEARLY;
-
-  public String getId(PlayerStatSet statSet) {
-    return this.getId(statSet.getId());
-  }
-
-  public String getId(String statSetKey) {
-    return this.name().toLowerCase() + ":" + statSetKey;
-  }
+  YEARLY,
+  NEVER;
 
   public String getResetKey() {
     return "last_" + this.name().toLowerCase() + "_time";
@@ -45,6 +37,9 @@ public enum PeriodicStatSetType {
 
       case YEARLY:
         return lastReset.getYear() < now.getYear();
+
+      case NEVER:
+        return false;
 
       default:
         throw new RuntimeException("Invalid stats set");
