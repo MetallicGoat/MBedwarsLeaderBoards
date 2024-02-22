@@ -197,8 +197,31 @@ public class Config {
     config.set("weekly-reset-day", resetDay.name());
 
     config.addEmptyLine();
+    config.addEmptyLine();
 
     config.addComment("Custom stats MBLeaderboards will track");
+    config.addComment("Example Configuration:");
+
+    config.addEmptyLine();
+
+    config.addComment("custom-stat-tracking:");
+    config.addComment("  solo:weekly:kills:                      # The id of the custom stat (Use this as the statId, for in PAPI placeholders above)");
+    config.addComment("    display-name: \"Weekly Solo Kills\"     # The display name of the custom stat");
+    config.addComment("    tracked-stat: bedwars:kills           # The stat this custom stat is tracking (or listening to)");
+    config.addComment("    periodic-type: weekly                 # When the stats should reset (removing this is equivalent to putting 'never') (daily/weekly/monthly/yearly/never)");
+    config.addComment("    restriction: [players_per_team=1]     # An arena picker which specifies what arenas this stat will be tracked in (remove this to apply to all arenas)");
+
+    config.addEmptyLine();
+
+    config.addComment("List of default MBedwars stats: https://javadocs.mbedwars.com/de/marcely/bedwars/api/player/DefaultPlayerStatSet.html");
+    config.addComment("Read about Arena Pickers: https://s.marcely.de/mbww15");
+
+    config.addEmptyLine();
+
+    config.addComment("NOTE: Custom stat ids can only contain the following characters: a-z, 0-9, :, _\n");
+
+    config.addEmptyLine();
+
     {
       for (CustomTrackedStatSet customStat : customStatSets) {
         final String path = "custom-stat-tracking." + customStat.getId() + ".";

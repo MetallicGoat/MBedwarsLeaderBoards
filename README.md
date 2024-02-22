@@ -29,13 +29,12 @@ This means you can track player's weekly kills, wins in solos arenas, or somethi
 Here is an example configuration:
 ```yml
 # Custom stats MBLeaderboards will track
-custom-stat-tracking:
-
-  solo:weekly:kills:                      # The id of the custom stat (Can be anything, for use in placeholders)
-    display-name: "Weekly Solo Kills"     # The display name of the custom stat
-    tracked-stat: bedwars:kills           # The regular stat this custom stat is tracking
-    periodic-type: weekly                 # When the stats should reset (removing this is equivalent to putting 'never') (daily/weekly/monthly/yearly/never)
-    restriction: [players-per-team=1]     # What arenas this stat will be tracked in (remove to apply to all)
+ custom-stat-tracking:
+   solo:weekly:kills:                      # The id of the custom stat (Use this as the statId, for in PAPI placeholders above)
+     display-name: "Weekly Solo Kills"     # The display name of the custom stat
+     tracked-stat: bedwars:kills           # The stat this custom stat is tracking (or listening to)
+     periodic-type: weekly                 # When the stats should reset (removing this is equivalent to putting 'never') (daily/weekly/monthly/yearly/never)
+     restriction: [players_per_team=1]     # An arena picker which specifies what arenas this stat will be tracked in (remove this to apply to all arenas)
 ```
 In this configuration we created a stat to track player kills in solos arenas. 
 The stat will reset for everyone every week on the configured weekday!
