@@ -3,7 +3,6 @@ package me.metallicgoat.bedwarsleaderboards;
 import de.marcely.bedwars.api.message.Message;
 import de.marcely.bedwars.api.player.*;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -45,26 +44,26 @@ public class Placeholders extends PlaceholderExpansion {
 
     // Missing parameters
     if (size < 2)
-      return null;
+      return "IMPROPER FORMAT";
 
     final String placeholderType = parts[0].toLowerCase();
-    final PlayerStatSet statSet = getPlayerStatsSet(parts[1].toLowerCase());
+    final PlayerStatSet statSet = Util.getStatsSetById(parts[1].toLowerCase());
 
     // Invalid stat ID
     if (statSet == null)
-      return null;
+      return "INVALID STAT ID";
 
     switch (placeholderType) {
       case "playeratposition":
       case "valueatposition": {
         if (size < 3)
-          return null;
+          return "IMPROPER FORMAT";
 
         final boolean returnValue = placeholderType.startsWith("value");
         final Integer position = parseInt(parts[2]);
 
         if (position == null)
-          return null;
+          return "POSITION NULL";
 
         final LeaderboardFetchResult result = LeaderboardsPlugin.getCache().getCachedFetchResult(statSet, position);
 
@@ -78,13 +77,13 @@ public class Placeholders extends PlaceholderExpansion {
           return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
 
         if (!returnValue) { // get the name of the player at the rank
-          return Bukkit.getOfflinePlayer(playerProperties.getPlayerUUID()).getName();
+          return playerProperties.get(DefaultPlayerProperty.BASE_USERNAME).orElse("Unknown");
 
         } else { // Get the value at the players rank
           final Optional<PlayerStats> playerStats = PlayerDataAPI.get().getStatsCached(playerProperties.getPlayerUUID());
 
           if (playerStats.isPresent())
-            return String.valueOf((statSet.getValue(playerStats.get()).intValue()));
+            return String.valueOf(statSet.getValue(playerStats.get()).intValue());
 
           // Cache da stats
           PlayerDataAPI.get().getStats(playerProperties.getPlayerUUID(), (stats) -> {});
@@ -108,8 +107,7 @@ public class Placeholders extends PlaceholderExpansion {
 
         if (!optional.isPresent()) {
           // load it async
-          PlayerDataAPI.get().getStats(offlinePlayer, (garbage) -> {
-          });
+          PlayerDataAPI.get().getStats(offlinePlayer, (garbage) -> {});
 
           // return that it's still loading
           return getDataLoadingMessage(offlinePlayer.getPlayer());
@@ -119,7 +117,7 @@ public class Placeholders extends PlaceholderExpansion {
       }
 
       default:
-        return null;
+        return "IMPROPER FORMAT";
     }
   }
   
@@ -133,15 +131,5 @@ public class Placeholders extends PlaceholderExpansion {
     } catch (NumberFormatException exception) {
       return null;
     }
-  }
-
-  private @Nullable PlayerStatSet getPlayerStatsSet(String id){
-    for (PlayerStatSet statsSet : PlayerDataAPI.get().getRegisteredStatSets()){
-      if (statsSet.getId().equals(id)){
-        return statsSet;
-      }
-    }
-
-    return null;
   }
 }
