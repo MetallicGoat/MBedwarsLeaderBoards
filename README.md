@@ -1,11 +1,16 @@
 # MBLeaderboards
 ### PAPI Leaderboard placeholders for MBedwars!
 
+# Why use this?
+Why use this over some other leaderboards plugin?
+Well, unlike other leaderboards plugins that works by parsing other PAPI placeholders to figure out what the positions are, 
+MBLeaderboards instead pulls the data directly from the MBedwars API, which is much more efficient and less resource intensive.
+Also since it is able to pull data directly from the MBedwars API, it does not require parsing possibly hundreds of placeholders to find the data it needs.
+
 # How does it work?
-MBLeaderboars asynchronously caches leaderboard standings calculated using MBedwars's built in leaderboards API.
-Every 10 minutes all rankings for every statistic are asynchronous recalculated and re-cached so there is very little overhead when a placeholder is being parsed.
-When a player joins the game, their rank for every statistic is cached, and when they leave, that cache is deleted.
-The top 15 positions of every stat are always cached.
+Every time a placeholder is parsed, it will check the MBLeaderboards cache for a value. 
+If no cached value is present, MBLeaderboards will use the MBedwars API to asynchronously calculate the value and cache it.
+If a cashed value is not referenced for 10 minutes, the cached value is deleted.
 
 # Dependencies
 - MBedwars (Obviously)
