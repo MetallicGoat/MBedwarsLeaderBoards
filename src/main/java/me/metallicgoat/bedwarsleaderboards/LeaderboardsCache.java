@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import de.marcely.bedwars.api.player.LeaderboardFetchResult;
 import de.marcely.bedwars.api.player.PlayerDataAPI;
 import de.marcely.bedwars.api.player.PlayerStatSet;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -18,12 +19,10 @@ public class LeaderboardsCache {
   // Trys to get a player rank, and caches it if it's not there
   public @Nullable Integer getCachedPlayerRank(UUID uuid, PlayerStatSet statSet) {
     final CacheHolder<PlayerStatSet, Integer> statSetCacheHolder = getOrBuildCacheHolder(playerRanksCache, uuid);
-    final boolean needsReCache = statSetCacheHolder.needsReCache();
+    final Integer rank = statSetCacheHolder.getCache().getIfPresent(statSet);
 
-    final Integer rank = statSetCacheHolder.requestCache().getIfPresent(statSet);
-
-    if (rank == null || needsReCache)
-      fetchAndCachePlayerRank(statSetCacheHolder.cache, uuid, statSet);
+    if (rank == null || statSetCacheHolder.needsReCache())
+      fetchAndCachePlayerRank(statSetCacheHolder, uuid, statSet);
 
     return rank;
   }
@@ -34,28 +33,24 @@ public class LeaderboardsCache {
       return null;
 
     final CacheHolder<Integer, LeaderboardFetchResult> resultsBlockCache = getOrBuildCacheHolder(fetchResultsCache, statSet);
-    final boolean needsReCache = resultsBlockCache.needsReCache();
+    final int blockPosition = (rank / 10) + 1; // start at 1 (groups of 10)
+    final LeaderboardFetchResult result = resultsBlockCache.getCache().getIfPresent(blockPosition);
 
-    // the position of the data at the block
-    int blockPosition = (rank / 10) + 1; // cannot be zero so add 1
-
-    final LeaderboardFetchResult result = resultsBlockCache.requestCache().getIfPresent(blockPosition);
-
-    if (result == null || needsReCache)
-      fetchAndCacheResultBlock(resultsBlockCache.cache, statSet, blockPosition);
+    if (result == null || resultsBlockCache.needsReCache())
+      fetchAndCacheResultBlock(resultsBlockCache, statSet, blockPosition);
 
     return result;
   }
 
-  private void fetchAndCachePlayerRank(Cache<PlayerStatSet, Integer> statSetCache, UUID player, PlayerStatSet statSet) {
+  private void fetchAndCachePlayerRank(CacheHolder<PlayerStatSet, Integer> holder, UUID player, PlayerStatSet statSet) {
     PlayerDataAPI.get().fetchLeaderboardPosition(player, statSet, position -> {
-      statSetCache.put(statSet, position);
+      holder.update(statSet, position);
     });
   }
 
-  private void fetchAndCacheResultBlock(Cache<Integer, LeaderboardFetchResult> resultBlockCache, PlayerStatSet statSet, int blockPosition) {
-    PlayerDataAPI.get().fetchLeaderboard(statSet, Math.max(1, (blockPosition * 10) - 10), blockPosition * 10, result -> {
-      resultBlockCache.put(blockPosition, result);
+  private void fetchAndCacheResultBlock(CacheHolder<Integer, LeaderboardFetchResult> holder, PlayerStatSet statSet, int blockPosition) {
+    PlayerDataAPI.get().fetchLeaderboard(statSet, Math.max(1, ((blockPosition - 1) * 10)), blockPosition * 10 - 1, result -> {
+      holder.update(blockPosition, result);
     });
   }
 
@@ -77,16 +72,17 @@ public class LeaderboardsCache {
   }
 
   private static class CacheHolder<Key, Value> {
+    @Getter
     private final Cache<Key, Value> cache = buildCache();
-    private long lastAccess = System.currentTimeMillis();
+    private long lastRefresh = System.currentTimeMillis();
 
-    public boolean needsReCache() {
-      return ((System.currentTimeMillis() - lastAccess) / 1000 * 60) > Config.reCacheMinutes;
+    public void update(Key key, Value value) {
+      this.cache.put(key, value);
+      this.lastRefresh = System.currentTimeMillis();
     }
 
-    public Cache<Key, Value> requestCache() {
-      lastAccess = System.currentTimeMillis();
-      return cache;
+    public boolean needsReCache() {
+      return ((System.currentTimeMillis() - lastRefresh) / 1000 / 60) > Config.reCacheMinutes;
     }
   }
 }

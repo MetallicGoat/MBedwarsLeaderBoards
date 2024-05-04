@@ -63,7 +63,7 @@ public class Placeholders extends PlaceholderExpansion {
         final Integer position = parseInt(parts[2]);
 
         if (position == null)
-          return "POSITION NULL";
+          return "INVALID POSITION";
 
         final LeaderboardFetchResult result = LeaderboardsPlugin.getCache().getCachedFetchResult(statSet, position);
 
