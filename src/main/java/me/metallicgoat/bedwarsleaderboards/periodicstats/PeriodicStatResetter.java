@@ -10,8 +10,10 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class PeriodicStatResetter {
   private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -21,9 +23,8 @@ public class PeriodicStatResetter {
     if (resetTask != null || Config.customStatsTracking)
       return;
 
-    resetTask = Bukkit.getScheduler().runTaskTimerAsynchronously(LeaderboardsPlugin.getInstance(), () -> {
+    resetTask = Bukkit.getScheduler().runTaskTimer(LeaderboardsPlugin.getInstance(), () -> {
       PlayerDataAPI.get().getProperties(new UUID(0, 0), (properties) -> {
-
         for (PeriodicType type : PeriodicType.values()) {
           if (type == PeriodicType.NEVER)
             continue;
@@ -41,15 +42,25 @@ public class PeriodicStatResetter {
           if (!type.needsReset(dateTime))
             continue;
 
-          Console.printInfo("Resetting all " + type.name() + " stats!");
           properties.set(resetKey, getCurrentDate());
 
-          // Reset all periodic stats of this type
-          for (CustomTrackedStatSet statSet : Config.customStatSets) {
-            if (statSet.getPeriodicType() == type) {
-              purgePlayerStatsSet(statSet);
+          final List<CustomTrackedStatSet> statsNeedingReset = Config.customStatSets.stream()
+              .filter(statSet -> statSet.getPeriodicType() == type)
+              .collect(Collectors.toList());
+
+          if (statsNeedingReset.isEmpty())
+            continue;
+
+          // Reset all periodic stats of this type async
+          Bukkit.getScheduler().runTask(LeaderboardsPlugin.getInstance(), () -> {
+            Console.printInfo("Resetting " + statsNeedingReset.size() + " " + type.name() + " stat set(s)!");
+
+            final OfflinePlayer[] players = Bukkit.getOfflinePlayers();
+
+            for (CustomTrackedStatSet statSet : statsNeedingReset) {
+              purgePlayerStatsSet(players, statSet);
             }
-          }
+          });
         }
       });
     }, 0, 20L * 60 * 5); // Check for any resets every 5 min
@@ -60,11 +71,12 @@ public class PeriodicStatResetter {
   }
 
   // Resets all sets of a certian type
-  private static void purgePlayerStatsSet(CustomTrackedStatSet statSet) {
-    for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
-      PlayerDataAPI.get().getStats(player, playerStats -> {
-        statSet.setValue(playerStats, 0);
-      });
+  private static void purgePlayerStatsSet(OfflinePlayer[] players, CustomTrackedStatSet statSet) {
+    for (OfflinePlayer player : players) {
+      if (player == null)
+        continue;
+
+      PlayerDataAPI.get().getStats(player, playerStats -> statSet.setValue(playerStats, 0));
     }
   }
 }
