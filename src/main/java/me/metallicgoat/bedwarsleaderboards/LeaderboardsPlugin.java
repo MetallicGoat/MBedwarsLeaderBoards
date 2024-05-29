@@ -14,8 +14,6 @@ public class LeaderboardsPlugin extends JavaPlugin {
   public static final String MIN_MBEDWARS_VER_NAME = "5.4.4";
 
   @Getter
-  private static LeaderboardsCache cache;
-  @Getter
   private static LeaderboardsPlugin instance;
   @Getter
   private static LeaderboardsAddon addon;
@@ -50,7 +48,6 @@ public class LeaderboardsPlugin extends JavaPlugin {
 
         CustomTrackedStatSet.registerAll();
         PeriodicStatResetter.startResettingTask(); // Manages the reset of periodic stats
-        cache = new LeaderboardsCache();
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
           placeholders = new Placeholders(this);

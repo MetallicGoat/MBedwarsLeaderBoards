@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 public class StatChangeListener implements Listener {
+
   @EventHandler
   public void onStatChangeEvent(PlayerStatChangeEvent event) {
     if (!Config.customStatsTracking)

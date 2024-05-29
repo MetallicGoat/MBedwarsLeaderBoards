@@ -65,7 +65,7 @@ public class Placeholders extends PlaceholderExpansion {
         if (position == null)
           return "INVALID POSITION";
 
-        final LeaderboardFetchResult result = LeaderboardsPlugin.getCache().getCachedFetchResult(statSet, position);
+        final LeaderboardFetchResult result = LeaderboardsCache.getCachedFetchResult(statSet, position);
 
         if (result == null)
           return getDataLoadingMessage(offlinePlayer.getPlayer());
@@ -93,7 +93,7 @@ public class Placeholders extends PlaceholderExpansion {
       }
 
       case "playerposition": {
-        final Integer position = LeaderboardsPlugin.getCache().getCachedPlayerRank(offlinePlayer.getUniqueId(), statSet);
+        final Integer position = LeaderboardsCache.getCachedPlayerRank(offlinePlayer.getUniqueId(), statSet);
 
         if (position != null)
           return String.valueOf(position);

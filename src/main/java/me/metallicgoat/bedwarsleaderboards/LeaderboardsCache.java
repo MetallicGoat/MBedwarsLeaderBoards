@@ -13,11 +13,11 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("UnstableApiUsage")
 public class LeaderboardsCache {
-  private final Cache<UUID, CacheHolder<PlayerStatSet, Integer>> playerRanksCache = buildCache();
-  private final Cache<PlayerStatSet, CacheHolder<Integer, LeaderboardFetchResult>> fetchResultsCache = buildCache();
+  private static final Cache<UUID, CacheHolder<PlayerStatSet, Integer>> playerRanksCache = buildCache();
+  private static final Cache<PlayerStatSet, CacheHolder<Integer, LeaderboardFetchResult>> fetchResultsCache = buildCache();
 
   // Trys to get a player rank, and caches it if it's not there
-  public @Nullable Integer getCachedPlayerRank(UUID uuid, PlayerStatSet statSet) {
+  public static @Nullable Integer getCachedPlayerRank(UUID uuid, PlayerStatSet statSet) {
     final CacheHolder<PlayerStatSet, Integer> statSetCacheHolder = getOrBuildCacheHolder(playerRanksCache, uuid);
     final Integer rank = statSetCacheHolder.getCache().getIfPresent(statSet);
 
@@ -28,7 +28,7 @@ public class LeaderboardsCache {
   }
 
   // Trys to get a player rank, and caches it if it's not there
-  public @Nullable LeaderboardFetchResult getCachedFetchResult(PlayerStatSet statSet, int rank) {
+  public static @Nullable LeaderboardFetchResult getCachedFetchResult(PlayerStatSet statSet, int rank) {
     if (rank < 1)
       return null;
 
@@ -42,19 +42,19 @@ public class LeaderboardsCache {
     return result;
   }
 
-  private void fetchAndCachePlayerRank(CacheHolder<PlayerStatSet, Integer> holder, UUID player, PlayerStatSet statSet) {
+  private static void fetchAndCachePlayerRank(CacheHolder<PlayerStatSet, Integer> holder, UUID player, PlayerStatSet statSet) {
     PlayerDataAPI.get().fetchLeaderboardPosition(player, statSet, position -> {
       holder.update(statSet, position);
     });
   }
 
-  private void fetchAndCacheResultBlock(CacheHolder<Integer, LeaderboardFetchResult> holder, PlayerStatSet statSet, int blockPosition) {
+  private static void fetchAndCacheResultBlock(CacheHolder<Integer, LeaderboardFetchResult> holder, PlayerStatSet statSet, int blockPosition) {
     PlayerDataAPI.get().fetchLeaderboard(statSet, Math.max(1, ((blockPosition - 1) * 10)), blockPosition * 10 - 1, result -> {
       holder.update(blockPosition, result);
     });
   }
 
-  private <HolderKey, HolderValue, CacheKey> CacheHolder<HolderKey, HolderValue> getOrBuildCacheHolder(Cache<CacheKey, CacheHolder<HolderKey, HolderValue>> outerCache, CacheKey key) {
+  private static <HolderKey, HolderValue, CacheKey> CacheHolder<HolderKey, HolderValue> getOrBuildCacheHolder(Cache<CacheKey, CacheHolder<HolderKey, HolderValue>> outerCache, CacheKey key) {
     CacheHolder<HolderKey, HolderValue> holder = outerCache.getIfPresent(key);
 
     if (holder == null) {
