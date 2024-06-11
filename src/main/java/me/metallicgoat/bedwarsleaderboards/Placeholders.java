@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class Placeholders extends PlaceholderExpansion {
 
@@ -76,25 +77,37 @@ public class Placeholders extends PlaceholderExpansion {
         if (playerProperties == null)
           return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
 
-        if (!returnValue) { // get the name of the player at the rank
-          return playerProperties.get(DefaultPlayerProperty.BASE_USERNAME).orElse("Unknown");
+        final PlayerStats playerStats = getOrLoadStats(playerProperties.getPlayerUUID());
 
-        } else { // Get the value at the players rank
-          final Optional<PlayerStats> playerStats = PlayerDataAPI.get().getStatsCached(playerProperties.getPlayerUUID());
-
-          if (playerStats.isPresent())
-            return String.valueOf(statSet.getValue(playerStats.get()).intValue());
-
-          // Cache da stats
-          PlayerDataAPI.get().getStats(playerProperties.getPlayerUUID(), (stats) -> {});
-
+        // Are stats loaded
+        if (playerStats == null)
           return getDataLoadingMessage(offlinePlayer.getPlayer());
-        }
+
+        // Have they even played?
+        if (hasNoRank(playerStats))
+          return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
+
+        if (!returnValue) // Get the name of the player at the rank
+          return String.valueOf(statSet.getValue(playerStats).intValue());
+
+        else // Get the value at the players rank
+          return playerProperties.get(DefaultPlayerProperty.BASE_USERNAME).orElse("Unknown");
       }
 
       case "playerposition": {
+        final PlayerStats playerStats = getOrLoadStats(offlinePlayer.getUniqueId());
+
+        // Stats not loaded
+        if (playerStats == null)
+          return getDataLoadingMessage(offlinePlayer.getPlayer());
+
+        // Have even played?
+        if (hasNoRank(playerStats))
+          return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
+
         final Integer position = LeaderboardsCache.getCachedPlayerRank(offlinePlayer.getUniqueId(), statSet);
 
+        // YAY! Success
         if (position != null)
           return String.valueOf(position);
 
@@ -119,6 +132,21 @@ public class Placeholders extends PlaceholderExpansion {
       default:
         return "IMPROPER FORMAT";
     }
+  }
+
+  private PlayerStats getOrLoadStats(UUID uuid) {
+    final Optional<PlayerStats> playerStats = PlayerDataAPI.get().getStatsCached(uuid);
+
+    if (playerStats.isPresent())
+      return playerStats.get();
+
+    PlayerDataAPI.get().getStats(uuid, (stats) -> {});
+
+    return null;
+  }
+
+  private boolean hasNoRank(PlayerStats playerStats) {
+    return Config.unfilledRankForZeroPlaytime && playerStats.get(DefaultPlayerStatSet.PLAY_TIME.getId()).intValue() == 0;
   }
   
   private String getDataLoadingMessage(Player player) {

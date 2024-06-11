@@ -25,6 +25,7 @@ public class Config {
 
   public static long reCacheMinutes = 2;
   public static String unfilledRank = "-";
+  public static boolean unfilledRankForZeroPlaytime = true;
   public static String dataLoading = "%placeholderapi_stats_loading%";
   public static boolean customStatsTracking = false;
   public static DayOfWeek resetDay = DayOfWeek.SUNDAY;
@@ -70,6 +71,7 @@ public class Config {
     reCacheMinutes = config.getLong("re-cache-minutes", reCacheMinutes);
 
     unfilledRank = config.getString("unfilled-rank", unfilledRank);
+    unfilledRankForZeroPlaytime = config.getBoolean("unfilled-rank-for-zero-playtime", unfilledRankForZeroPlaytime);
     dataLoading = config.getString("data-loading", dataLoading);
 
     customStatsTracking = config.getBoolean("custom-stat-tracking-enabled", customStatsTracking);
@@ -175,6 +177,11 @@ public class Config {
     config.addComment("What should be returned if there is no player at a certian rank.");
     config.addComment("For example if you want the 10th position, but only 5 players have played");
     config.set("unfilled-rank", Config.unfilledRank);
+
+    config.addEmptyLine();
+
+    config.addComment("Should the unfilled rank string above be displayed if the player has 0 playtime");
+    config.set("unfilled-rank-for-zero-playtime", Config.unfilledRankForZeroPlaytime);
 
     config.addEmptyLine();
 
