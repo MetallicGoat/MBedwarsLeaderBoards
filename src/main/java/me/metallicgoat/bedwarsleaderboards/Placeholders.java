@@ -34,6 +34,11 @@ public class Placeholders extends PlaceholderExpansion {
     return this.plugin.getDescription().getVersion();
   }
 
+  @Override
+  public boolean persist() {
+    return true;
+  }
+
   // %MBLeaderboards_playeratposition-<statId>-<position>%
   // %MBLeaderboards_valueatposition-<statId>-<position>%
   // %MBLeaderboards_playerposition-<statId>%
