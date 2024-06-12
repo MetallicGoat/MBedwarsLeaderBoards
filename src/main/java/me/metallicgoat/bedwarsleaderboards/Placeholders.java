@@ -92,7 +92,7 @@ public class Placeholders extends PlaceholderExpansion {
         if (hasNoRank(playerStats))
           return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
 
-        if (!returnValue) // Get the name of the player at the rank
+        if (returnValue) // Get the name of the player at the rank
           return String.valueOf(statSet.getValue(playerStats).intValue());
 
         else // Get the value at the players rank
