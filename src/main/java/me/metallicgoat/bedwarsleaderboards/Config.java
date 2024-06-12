@@ -169,18 +169,19 @@ public class Config {
     config.addEmptyLine();
 
     config.addComment("How many minutes before rankings will automatically be recalculated.");
-    config.addComment("We recommend you keep this no lower than 5 minutes");
+    config.addComment("We recommend you keep this no lower than 5 minutes.");
     config.set("re-cache-minutes", Config.reCacheMinutes);
 
     config.addEmptyLine();
 
     config.addComment("What should be returned if there is no player at a certian rank.");
-    config.addComment("For example if you want the 10th position, but only 5 players have played");
+    config.addComment("For example if you want the 10th position, but only 5 players have played.");
     config.set("unfilled-rank", Config.unfilledRank);
 
     config.addEmptyLine();
 
-    config.addComment("Should the unfilled rank string above be displayed if the player has 0 playtime");
+    config.addComment("When enabled, ranks will not be assigned/displayed is players have no playtime.");
+    config.addComment("If disabled, ranks will be assigned based on the order of players who joined the server for the first time.");
     config.set("unfilled-rank-for-zero-playtime", Config.unfilledRankForZeroPlaytime);
 
     config.addEmptyLine();
@@ -200,13 +201,13 @@ public class Config {
 
     config.addEmptyLine();
 
-    config.addComment("What day of the week 'WEEKLY' stats will reset");
+    config.addComment("What day of the week 'WEEKLY' stats will reset.");
     config.set("weekly-reset-day", resetDay.name());
 
     config.addEmptyLine();
     config.addEmptyLine();
 
-    config.addComment("Custom stats MBLeaderboards will track");
+    config.addComment("Custom stats MBLeaderboards will track.");
     config.addComment("Example Configuration:");
 
     config.addEmptyLine();
