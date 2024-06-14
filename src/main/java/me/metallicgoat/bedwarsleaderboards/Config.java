@@ -25,7 +25,7 @@ public class Config {
 
   public static long reCacheMinutes = 2;
   public static String unfilledRank = "-";
-  public static boolean unfilledRankForZeroPlaytime = true;
+  public static boolean unfilledRankForZeroValue = true;
   public static String dataLoading = "%placeholderapi_stats_loading%";
   public static boolean customStatsTracking = false;
   public static DayOfWeek resetDay = DayOfWeek.SUNDAY;
@@ -71,7 +71,7 @@ public class Config {
     reCacheMinutes = config.getLong("re-cache-minutes", reCacheMinutes);
 
     unfilledRank = config.getString("unfilled-rank", unfilledRank);
-    unfilledRankForZeroPlaytime = config.getBoolean("unfilled-rank-for-zero-playtime", unfilledRankForZeroPlaytime);
+    unfilledRankForZeroValue = config.getBoolean("unfilled-rank-for-zero-value", unfilledRankForZeroValue);
     dataLoading = config.getString("data-loading", dataLoading);
 
     customStatsTracking = config.getBoolean("custom-stat-tracking-enabled", customStatsTracking);
@@ -180,9 +180,9 @@ public class Config {
 
     config.addEmptyLine();
 
-    config.addComment("When enabled, ranks will not be assigned/displayed is players have no playtime.");
+    config.addComment("When enabled, ranks will not be assigned/displayed if player has a zero for a certian stat.");
     config.addComment("If disabled, ranks will be assigned based on the order of players who joined the server for the first time.");
-    config.set("unfilled-rank-for-zero-playtime", Config.unfilledRankForZeroPlaytime);
+    config.set("unfilled-rank-for-zero-value", Config.unfilledRankForZeroValue);
 
     config.addEmptyLine();
 

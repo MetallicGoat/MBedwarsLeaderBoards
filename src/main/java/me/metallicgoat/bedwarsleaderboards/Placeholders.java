@@ -89,7 +89,7 @@ public class Placeholders extends PlaceholderExpansion {
           return getDataLoadingMessage(offlinePlayer.getPlayer());
 
         // Have they even played?
-        if (hasNoRank(playerStats))
+        if (hasNoRank(playerStats, statSet))
           return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
 
         if (returnValue) // Get the name of the player at the rank
@@ -107,7 +107,7 @@ public class Placeholders extends PlaceholderExpansion {
           return getDataLoadingMessage(offlinePlayer.getPlayer());
 
         // Have even played?
-        if (hasNoRank(playerStats))
+        if (hasNoRank(playerStats, statSet))
           return Message.build(Config.unfilledRank).done(offlinePlayer.getPlayer());
 
         final Integer position = LeaderboardsCache.getCachedPlayerRank(offlinePlayer.getUniqueId(), statSet);
@@ -150,8 +150,8 @@ public class Placeholders extends PlaceholderExpansion {
     return null;
   }
 
-  private boolean hasNoRank(PlayerStats playerStats) {
-    return Config.unfilledRankForZeroPlaytime && playerStats.get(DefaultPlayerStatSet.PLAY_TIME.getId()).intValue() == 0;
+  private boolean hasNoRank(PlayerStats playerStats, PlayerStatSet statSet) {
+    return Config.unfilledRankForZeroValue && statSet.getValue(playerStats).intValue() == 0;
   }
   
   private String getDataLoadingMessage(Player player) {
