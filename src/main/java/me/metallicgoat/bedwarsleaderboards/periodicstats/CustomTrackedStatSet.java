@@ -43,12 +43,17 @@ public class CustomTrackedStatSet implements PlayerStatSet {
 
   @Override
   public String getName(CommandSender sender) {
-    return Message.build(rawDisplayName).done(sender);
+    return Message.build(this.rawDisplayName).done(sender);
   }
 
   @Override
   public String getDisplayedValue(PlayerStats stats) {
-    return formatInt(stats.get(this.id).intValue());
+    return this.trackedStatSet.formatValue(stats.get(this.id));
+  }
+
+  @Override
+  public String formatValue(Number value) {
+    return this.trackedStatSet.formatValue(value);
   }
 
   @Override

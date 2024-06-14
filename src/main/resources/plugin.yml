@@ -1,5 +1,5 @@
 name: MBLeaderboardsAddon
-version: 1.0.0
+version: 1.1.0
 author: MetallicGoat
 main: me.metallicgoat.bedwarsleaderboards.LeaderboardsPlugin
 description: Adds leaderboards placeholders to MBedwars

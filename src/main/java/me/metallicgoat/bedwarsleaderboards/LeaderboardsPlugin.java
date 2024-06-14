@@ -10,8 +10,8 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class LeaderboardsPlugin extends JavaPlugin {
-  public static final int MIN_MBEDWARS_API_VER = 103;
-  public static final String MIN_MBEDWARS_VER_NAME = "5.4.4";
+  public static final int MIN_MBEDWARS_API_VER = 105;
+  public static final String MIN_MBEDWARS_VER_NAME = "5.4.6";
 
   @Getter
   private static LeaderboardsPlugin instance;
