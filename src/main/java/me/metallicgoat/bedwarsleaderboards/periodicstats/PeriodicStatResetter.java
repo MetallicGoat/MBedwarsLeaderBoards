@@ -1,11 +1,12 @@
 package me.metallicgoat.bedwarsleaderboards.periodicstats;
 
 import de.marcely.bedwars.api.player.PlayerDataAPI;
+import java.util.Collection;
+import java.util.Set;
 import me.metallicgoat.bedwarsleaderboards.Config;
 import me.metallicgoat.bedwarsleaderboards.Console;
 import me.metallicgoat.bedwarsleaderboards.LeaderboardsPlugin;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.time.LocalDateTime;
@@ -51,16 +52,9 @@ public class PeriodicStatResetter {
           if (statsNeedingReset.isEmpty())
             continue;
 
-          // Reset all periodic stats of this type async
-          Bukkit.getScheduler().runTask(LeaderboardsPlugin.getInstance(), () -> {
-            Console.printInfo("Resetting " + statsNeedingReset.size() + " " + type.name() + " stat set(s)!");
+          Console.printInfo("Resetting " + statsNeedingReset.size() + " " + type.name() + " stat set(s)!");
 
-            final OfflinePlayer[] players = Bukkit.getOfflinePlayers();
-
-            for (CustomTrackedStatSet statSet : statsNeedingReset) {
-              purgePlayerStatsSet(players, statSet);
-            }
-          });
+          purgePlayerStatsSet(statsNeedingReset);
         }
       });
     }, 0, 20L * 60 * 5); // Check for any resets every 5 min
@@ -70,13 +64,17 @@ public class PeriodicStatResetter {
     return LocalDateTime.now().format(dateTimeFormatter);
   }
 
-  // Resets all sets of a certian type
-  private static void purgePlayerStatsSet(OfflinePlayer[] players, CustomTrackedStatSet statSet) {
-    for (OfflinePlayer player : players) {
-      if (player == null)
-        continue;
+  // Resets all sets
+  private static void purgePlayerStatsSet(Collection<CustomTrackedStatSet> statSets) {
+    final Set<String> statSetIds = statSets.stream()
+        .map(CustomTrackedStatSet::getId)
+        .collect(Collectors.toSet());
 
-      PlayerDataAPI.get().getStats(player, playerStats -> statSet.setValue(playerStats, 0));
-    }
+    PlayerDataAPI.get().purgeAllPlayerData(
+        statSetIds,
+        false,
+        false,
+        false,
+        null);
   }
 }
