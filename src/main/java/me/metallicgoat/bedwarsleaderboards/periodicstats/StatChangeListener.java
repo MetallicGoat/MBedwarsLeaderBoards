@@ -15,7 +15,7 @@ import org.bukkit.event.Listener;
 
 public class StatChangeListener implements Listener {
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onStatChangeEvent(PlayerStatChangeEvent event) {
     if (!Config.customStatsTracking || event.isFromRemoteServer() /* otherwise we have an endless cycle of updates */)
       return;
