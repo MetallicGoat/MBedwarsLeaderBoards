@@ -31,7 +31,6 @@ public class LeaderboardsPlugin extends JavaPlugin {
       return;
 
     addon.registerEvents();
-    addon.test();
 
     final PluginDescriptionFile pdf = this.getDescription();
 

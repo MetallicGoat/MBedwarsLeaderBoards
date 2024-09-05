@@ -10,13 +10,14 @@ import me.metallicgoat.bedwarsleaderboards.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 public class StatChangeListener implements Listener {
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onStatChangeEvent(PlayerStatChangeEvent event) {
-    if (!Config.customStatsTracking)
+    if (!Config.customStatsTracking || event.isFromRemoteServer() /* otherwise we have an endless cycle of updates */)
       return;
 
     final PlayerStatSet statSet = Util.getStatsSetById(event.getKey());
