@@ -1,6 +1,8 @@
 package me.metallicgoat.bedwarsleaderboards.periodicstats;
 
 import de.marcely.bedwars.api.player.PlayerDataAPI;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Set;
 import me.metallicgoat.bedwarsleaderboards.Config;
@@ -21,7 +23,7 @@ public class PeriodicStatResetter {
   private static BukkitTask resetTask;
 
   public static void startResettingTask() {
-    if (resetTask != null || Config.customStatsTracking)
+    if (resetTask != null || !Config.customStatsTracking)
       return;
 
     resetTask = Bukkit.getScheduler().runTaskTimer(LeaderboardsPlugin.getInstance(), () -> {
@@ -30,20 +32,24 @@ public class PeriodicStatResetter {
           if (type == PeriodicType.NEVER)
             continue;
 
+          final ZoneId zone = Config.timeZone;
+          final ZonedDateTime now = ZonedDateTime.now(zone);
           final String resetKey = type.getResetKey();
           final Optional<String> optionalDate = properties.get(resetKey);
 
           if (!optionalDate.isPresent()) {
-            properties.set(resetKey, getCurrentDate());
+            properties.set(resetKey, now.format(dateTimeFormatter));
             continue;
           }
 
-          final LocalDateTime dateTime = LocalDateTime.parse(optionalDate.get(), dateTimeFormatter);
+          final ZonedDateTime dateTime = LocalDateTime
+              .parse(optionalDate.get(), dateTimeFormatter)
+              .atZone(zone);
 
-          if (!type.needsReset(dateTime))
+          if (!type.needsReset(dateTime, now))
             continue;
 
-          properties.set(resetKey, getCurrentDate());
+          properties.set(resetKey, now.format(dateTimeFormatter));
 
           final List<CustomTrackedStatSet> statsNeedingReset = Config.customStatSets.stream()
               .filter(statSet -> statSet.getPeriodicType() == type)
@@ -58,10 +64,6 @@ public class PeriodicStatResetter {
         }
       });
     }, 0, 20L * 60 * 5); // Check for any resets every 5 min
-  }
-
-  private static String getCurrentDate() {
-    return LocalDateTime.now().format(dateTimeFormatter);
   }
 
   // Resets all sets
