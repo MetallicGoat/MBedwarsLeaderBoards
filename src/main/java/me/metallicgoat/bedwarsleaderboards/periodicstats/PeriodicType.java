@@ -1,8 +1,9 @@
 package me.metallicgoat.bedwarsleaderboards.periodicstats;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import me.metallicgoat.bedwarsleaderboards.Config;
 
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 
 public enum PeriodicType {
@@ -20,16 +21,14 @@ public enum PeriodicType {
     return statId.startsWith(this.name().toLowerCase() + ":");
   }
 
-  public boolean needsReset(LocalDateTime lastReset) {
-    final LocalDateTime now = LocalDateTime.now();
-
+  public boolean needsReset(ZonedDateTime lastReset, ZonedDateTime now) {
     switch (this) {
       case DAILY:
         return lastReset.toLocalDate().isBefore(now.toLocalDate());
 
       case WEEKLY:
-        final LocalDateTime lastTuesday = lastReset.with(TemporalAdjusters.previousOrSame(Config.resetDay));
-        final LocalDateTime nextTuesday = lastTuesday.with(TemporalAdjusters.next(Config.resetDay));
+        final ZonedDateTime lastTuesday = lastReset.with(TemporalAdjusters.previousOrSame(Config.resetDay));
+        final ZonedDateTime nextTuesday = lastTuesday.with(TemporalAdjusters.next(Config.resetDay));
         return now.isEqual(nextTuesday) || now.isAfter(nextTuesday);
 
       case MONTHLY:

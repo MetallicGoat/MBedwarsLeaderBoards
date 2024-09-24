@@ -5,6 +5,7 @@ import de.marcely.bedwars.api.arena.picker.condition.ArenaConditionGroup;
 import de.marcely.bedwars.api.exception.ArenaConditionParseException;
 import de.marcely.bedwars.api.player.PlayerStatSet;
 import de.marcely.bedwars.tools.YamlConfigurationDescriptor;
+import java.time.ZoneId;
 import me.metallicgoat.bedwarsleaderboards.periodicstats.CustomTrackedStatSet;
 import me.metallicgoat.bedwarsleaderboards.periodicstats.PeriodicType;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,6 +30,8 @@ public class Config {
   public static String dataLoading = "%placeholderapi_stats_loading%";
   public static boolean customStatsTracking = false;
   public static DayOfWeek resetDay = DayOfWeek.SUNDAY;
+  public static ZoneId timeZone = ZoneId.systemDefault();
+  public static boolean timeZoneIsSystem = true;
 
   public static List<CustomTrackedStatSet> customStatSets = Arrays.asList(
       buildCustomStatSet("weekly:solos:kills", "Weekly Solos Kills", "bedwars:kills", PeriodicType.WEEKLY, "[players_per_team=1]"),
@@ -83,6 +86,23 @@ public class Config {
         resetDay = DayOfWeek.valueOf(dayOfWeek);
       } catch (IllegalArgumentException e) {
         Console.printConfigWarn("'" + dayOfWeek + "' is not a valid day of the week!", "Main");
+      }
+    }
+
+    {
+      final String zoneId = config.getString("time-zone", timeZone.getId());
+
+      if (zoneId != null && !zoneId.equalsIgnoreCase("system")) {
+        try {
+          timeZone = ZoneId.of(zoneId);
+          timeZoneIsSystem = false;
+        } catch (Exception e) {
+          Console.printConfigWarn("'" + zoneId + "' is not a valid time zone!", "Main");
+        }
+
+      } else {
+        timeZone = ZoneId.systemDefault();
+        timeZoneIsSystem = true;
       }
     }
 
@@ -203,6 +223,17 @@ public class Config {
 
     config.addComment("What day of the week 'WEEKLY' stats will reset.");
     config.set("weekly-reset-day", resetDay.name());
+
+    config.addEmptyLine();
+
+    config.addComment("The time zone to use for periodic stat resets.");
+    config.addComment("Examples:");
+    config.addComment("- SYSTEM: Use what is configured on your machine");
+    config.addComment("- UTC");
+    config.addComment("- Europe/Berlin");
+    config.addComment("- GMT-7");
+    config.addComment("You may find your TZ identifier here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones");
+    config.set("time-zone", timeZoneIsSystem ? "SYSTEM" : timeZone.getId());
 
     config.addEmptyLine();
     config.addEmptyLine();
