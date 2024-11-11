@@ -43,12 +43,18 @@ public class LeaderboardsCache {
   }
 
   private static void fetchAndCachePlayerRank(CacheHolder<PlayerStatSet, Integer> holder, UUID player, PlayerStatSet statSet) {
+    if (!holder.attemptReCache())
+      return;
+
     PlayerDataAPI.get().fetchLeaderboardPosition(player, statSet, position -> {
       holder.update(statSet, position);
     });
   }
 
   private static void fetchAndCacheResultBlock(CacheHolder<Integer, LeaderboardFetchResult> holder, PlayerStatSet statSet, int blockPosition) {
+    if (!holder.attemptReCache())
+      return;
+
     PlayerDataAPI.get().fetchLeaderboard(statSet, Math.max(1, ((blockPosition - 1) * 10)), blockPosition * 10 - 1, result -> {
       holder.update(blockPosition, result);
     });
@@ -75,10 +81,21 @@ public class LeaderboardsCache {
     @Getter
     private final Cache<Key, Value> cache = buildCache();
     private long lastRefresh = System.currentTimeMillis();
+    private boolean isReCaching = false;
 
     public void update(Key key, Value value) {
+      this.isReCaching = false;
       this.cache.put(key, value);
       this.lastRefresh = System.currentTimeMillis();
+    }
+
+    public boolean attemptReCache() {
+      if (this.isReCaching)
+        return false;
+
+      this.isReCaching = true;
+
+      return true;
     }
 
     public boolean needsReCache() {
