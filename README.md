@@ -3,14 +3,15 @@
 
 # Why use this?
 Why use this over some other leaderboards plugin?
-Well, unlike other leaderboards plugins that works by parsing other PAPI placeholders to figure out what the positions are, 
-MBLeaderboards instead pulls the data directly from the MBedwars API, which is much more efficient and less resource intensive.
+Well, unlike other leaderboards plugins that work by parsing PAPI placeholders to figure out what the current rankings are, 
+MBLeaderboards instead pulls stat data directly from the MBedwars API, which is much more efficient and less resource intensive.
 Also since it is able to pull data directly from the MBedwars API, it does not require parsing possibly hundreds of placeholders to find the data it needs.
 
 # How does it work?
-Every time a placeholder is parsed, it will check the MBLeaderboards cache for a value. 
+Every time a placeholder is parsed, it will check the MBLeaderboards cached for a value. 
 If no cached value is present, MBLeaderboards will use the MBedwars API to asynchronously calculate the value and cache it.
 If a cashed value is not referenced for 10 minutes, the cached value is deleted.
+MBLeaderboards does not store any extra data, and only calculates and caches rankings when needed.
 
 # Dependencies
 - MBedwars (Obviously)
@@ -41,7 +42,7 @@ Here is an example configuration:
      periodic-type: weekly                 # When the stats should reset (removing this is equivalent to putting 'never') (daily/weekly/monthly/yearly/never)
      restriction: [players_per_team=1]     # An arena picker which specifies what arenas this stat will be tracked in (remove this to apply to all arenas)
 ```
-In this configuration we created a stat to track player kills in solos arenas. 
+In the above configuration we created a stat to track player kills in solos arenas. 
 The stat will reset for everyone every week on the configured weekday!
 
 To get the value of the stat use `%MBLeaderboards_playerstat-solo:weekly:kills%`
