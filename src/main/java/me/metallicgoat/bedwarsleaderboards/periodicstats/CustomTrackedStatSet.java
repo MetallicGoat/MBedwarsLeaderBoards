@@ -56,11 +56,11 @@ public class CustomTrackedStatSet implements PlayerStatSet {
 
   @Override
   public String formatValue(Number value) {
-    if (isTrackingKD()) {
-      double kdRepresentation = value.doubleValue();
+    if (isTrackingRatioValue()) {
+      double ratioRepresentation = value.doubleValue();
 
-      double kills = (int) kdRepresentation;
-      double deaths = (int) Math.round((kdRepresentation - kills) * Math.pow(10, RATIO_OFFSET_DIGITS));
+      double kills = (int) ratioRepresentation;
+      double deaths = (int) Math.round((ratioRepresentation - kills) * Math.pow(10, RATIO_OFFSET_DIGITS));
 
       value = kills / (deaths == 0 ? 1 : deaths);
     }
@@ -84,8 +84,10 @@ public class CustomTrackedStatSet implements PlayerStatSet {
       stats.set(this.id, value);
   }
 
-  public boolean isTrackingKD() {
-    return this.trackedStatSet == DefaultPlayerStatSet.K_D;
+  public boolean isTrackingRatioValue() {
+    return this.trackedStatSet == DefaultPlayerStatSet.K_D ||
+        this.trackedStatSet == DefaultPlayerStatSet.FINAL_K_D ||
+        this.trackedStatSet == DefaultPlayerStatSet.W_L;
   }
 
   public boolean isSupportedInArena(Arena arena) {

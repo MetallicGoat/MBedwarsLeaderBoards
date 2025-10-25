@@ -35,22 +35,47 @@ public class StatChangeListener implements Listener {
     // Update all custom stats
     for (CustomTrackedStatSet customStatSet : Config.customStatSets) {
 
-      // Extra tracking for the KD ratio
-      if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.K_D) {
-
-        // int part represents kills, decimal part represents deaths
-        if (statSet == DefaultPlayerStatSet.KILLS) {
-          stats.add(customStatSet.getId(), change.doubleValue());
-
-        } else if (statSet == DefaultPlayerStatSet.DEATHS) {
-          stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
-        }
-
-        System.out.println(stats.get(customStatSet.getId()));
-      }
+      updateRatios(stats, statSet, customStatSet, change);
 
       if (customStatSet.getTrackedStatSet() == statSet && customStatSet.isSupportedInArena(arena)) {
         stats.add(customStatSet.getId(), change);
+      }
+    }
+  }
+
+
+  // Extra tracking for the ratios
+  private void updateRatios(PlayerStats stats, PlayerStatSet statSet, CustomTrackedStatSet customStatSet, Number change) {
+    if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.K_D) {
+
+      // int part represents kills, decimal part represents deaths
+      if (statSet == DefaultPlayerStatSet.KILLS) {
+        stats.add(customStatSet.getId(), change.doubleValue());
+
+      } else if (statSet == DefaultPlayerStatSet.DEATHS) {
+        stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
+      }
+    }
+
+    if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.FINAL_K_D) {
+
+      // int part represents final kills, decimal part represents final deaths
+      if (statSet == DefaultPlayerStatSet.FINAL_KILLS) {
+        stats.add(customStatSet.getId(), change.doubleValue());
+
+      } else if (statSet == DefaultPlayerStatSet.FINAL_DEATHS) {
+        stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
+      }
+    }
+
+    if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.W_L) {
+
+      // int part represents wins, decimal part represents loses
+      if (statSet == DefaultPlayerStatSet.WINS) {
+        stats.add(customStatSet.getId(), change.doubleValue());
+
+      } else if (statSet == DefaultPlayerStatSet.LOSES) {
+        stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
       }
     }
   }
