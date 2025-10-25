@@ -3,6 +3,7 @@ package me.metallicgoat.bedwarsleaderboards.periodicstats;
 import de.marcely.bedwars.api.GameAPI;
 import de.marcely.bedwars.api.arena.Arena;
 import de.marcely.bedwars.api.event.player.PlayerStatChangeEvent;
+import de.marcely.bedwars.api.player.DefaultPlayerStatSet;
 import de.marcely.bedwars.api.player.PlayerStatSet;
 import de.marcely.bedwars.api.player.PlayerStats;
 import me.metallicgoat.bedwarsleaderboards.Config;
@@ -33,6 +34,21 @@ public class StatChangeListener implements Listener {
 
     // Update all custom stats
     for (CustomTrackedStatSet customStatSet : Config.customStatSets) {
+
+      // Extra tracking for the KD ratio
+      if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.K_D) {
+
+        // int part represents kills, decimal part represents deaths
+        if (statSet == DefaultPlayerStatSet.KILLS) {
+          stats.add(customStatSet.getId(), change.doubleValue());
+
+        } else if (statSet == DefaultPlayerStatSet.DEATHS) {
+          stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
+        }
+
+        System.out.println(stats.get(customStatSet.getId()));
+      }
+
       if (customStatSet.getTrackedStatSet() == statSet && customStatSet.isSupportedInArena(arena)) {
         stats.add(customStatSet.getId(), change);
       }

@@ -3,6 +3,7 @@ package me.metallicgoat.bedwarsleaderboards.periodicstats;
 import de.marcely.bedwars.api.arena.Arena;
 import de.marcely.bedwars.api.arena.picker.condition.ArenaConditionGroup;
 import de.marcely.bedwars.api.message.Message;
+import de.marcely.bedwars.api.player.DefaultPlayerStatSet;
 import de.marcely.bedwars.api.player.PlayerDataAPI;
 import de.marcely.bedwars.api.player.PlayerStatSet;
 import de.marcely.bedwars.api.player.PlayerStats;
@@ -13,6 +14,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
 public class CustomTrackedStatSet implements PlayerStatSet {
+
+  public static byte RATIO_OFFSET_DIGITS = 8;
 
   @Getter
   private final String id;
@@ -48,11 +51,20 @@ public class CustomTrackedStatSet implements PlayerStatSet {
 
   @Override
   public String getDisplayedValue(PlayerStats stats) {
-    return this.trackedStatSet.formatValue(stats.get(this.id));
+    return formatValue(stats.get(this.id));
   }
 
   @Override
   public String formatValue(Number value) {
+    if (isTrackingKD()) {
+      double kdRepresentation = value.doubleValue();
+
+      double kills = (int) kdRepresentation;
+      double deaths = (int) Math.round((kdRepresentation - kills) * Math.pow(10, RATIO_OFFSET_DIGITS));
+
+      value = kills / (deaths == 0 ? 1 : deaths);
+    }
+
     return this.trackedStatSet.formatValue(value);
   }
 
@@ -70,6 +82,10 @@ public class CustomTrackedStatSet implements PlayerStatSet {
 
     } else
       stats.set(this.id, value);
+  }
+
+  public boolean isTrackingKD() {
+    return this.trackedStatSet == DefaultPlayerStatSet.K_D;
   }
 
   public boolean isSupportedInArena(Arena arena) {
