@@ -21,10 +21,10 @@ public class StatChangeListener implements Listener {
     if (!Config.customStatsTracking || event.isFromRemoteServer() /* otherwise we have an endless cycle of updates */)
       return;
 
-    final PlayerStatSet statSet = Util.getStatsSetById(event.getKey());
+    final PlayerStatSet changingStatSet = Util.getStatsSetById(event.getKey());
 
     // we don't want to track our own stats
-    if (statSet instanceof CustomTrackedStatSet)
+    if (changingStatSet instanceof CustomTrackedStatSet)
       return;
 
     final PlayerStats stats = event.getStats();
@@ -35,9 +35,9 @@ public class StatChangeListener implements Listener {
     // Update all custom stats
     for (CustomTrackedStatSet customStatSet : Config.customStatSets) {
 
-      updateRatios(stats, statSet, customStatSet, change);
+      updateRatios(stats, changingStatSet, customStatSet, change);
 
-      if (customStatSet.getTrackedStatSet() == statSet && customStatSet.isSupportedInArena(arena)) {
+      if (customStatSet.getTrackedStatSet() == changingStatSet && customStatSet.isSupportedInArena(arena)) {
         stats.add(customStatSet.getId(), change);
       }
     }
@@ -45,38 +45,48 @@ public class StatChangeListener implements Listener {
 
 
   // Extra tracking for the ratios
-  private void updateRatios(PlayerStats stats, PlayerStatSet statSet, CustomTrackedStatSet customStatSet, Number change) {
+  private void updateRatios(PlayerStats stats, PlayerStatSet changingStatSet, CustomTrackedStatSet customStatSet, Number change) {
     if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.K_D) {
+      updateRatio(
+          stats, customStatSet, changingStatSet,
+          DefaultPlayerStatSet.KILLS,
+          DefaultPlayerStatSet.DEATHS,
+          change
+      );
 
-      // int part represents kills, decimal part represents deaths
-      if (statSet == DefaultPlayerStatSet.KILLS) {
-        stats.add(customStatSet.getId(), change.doubleValue());
-
-      } else if (statSet == DefaultPlayerStatSet.DEATHS) {
-        stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
-      }
+      return;
     }
 
     if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.FINAL_K_D) {
+      updateRatio(
+          stats, customStatSet, changingStatSet,
+          DefaultPlayerStatSet.FINAL_KILLS,
+          DefaultPlayerStatSet.FINAL_DEATHS,
+          change
+      );
 
-      // int part represents final kills, decimal part represents final deaths
-      if (statSet == DefaultPlayerStatSet.FINAL_KILLS) {
-        stats.add(customStatSet.getId(), change.doubleValue());
-
-      } else if (statSet == DefaultPlayerStatSet.FINAL_DEATHS) {
-        stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
-      }
+      return;
     }
 
     if (customStatSet.getTrackedStatSet() == DefaultPlayerStatSet.W_L) {
+      updateRatio(
+          stats, customStatSet, changingStatSet,
+          DefaultPlayerStatSet.WINS,
+          DefaultPlayerStatSet.LOSES,
+          change
+      );
 
-      // int part represents wins, decimal part represents loses
-      if (statSet == DefaultPlayerStatSet.WINS) {
-        stats.add(customStatSet.getId(), change.doubleValue());
+      return;
+    }
+  }
 
-      } else if (statSet == DefaultPlayerStatSet.LOSES) {
-        stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
-      }
+  private void updateRatio(PlayerStats stats, PlayerStatSet customStatSet, PlayerStatSet changingStatSet, PlayerStatSet numerator, PlayerStatSet denominator, Number change) {
+    // int part represents numerator, denominator
+    if (changingStatSet == numerator) {
+      stats.add(customStatSet.getId(), change.doubleValue());
+
+    } else if (changingStatSet == denominator) {
+      stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
     }
   }
 }
