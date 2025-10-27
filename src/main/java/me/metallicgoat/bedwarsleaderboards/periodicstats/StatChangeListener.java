@@ -86,7 +86,7 @@ public class StatChangeListener implements Listener {
       stats.add(customStatSet.getId(), change.doubleValue());
 
     } else if (changingStatSet == denominator) {
-      stats.add(customStatSet.getId(), Math.pow(10, change.doubleValue() * -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
+      stats.add(customStatSet.getId(), change.doubleValue() * Math.pow(10, -CustomTrackedStatSet.RATIO_OFFSET_DIGITS));
     }
   }
 }

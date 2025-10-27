@@ -15,7 +15,7 @@ import org.bukkit.plugin.Plugin;
 
 public class CustomTrackedStatSet implements PlayerStatSet {
 
-  public static byte RATIO_OFFSET_DIGITS = 8;
+  public static byte RATIO_OFFSET_DIGITS = 5;
 
   @Getter
   private final String id;
