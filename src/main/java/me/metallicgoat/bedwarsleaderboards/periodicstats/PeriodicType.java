@@ -27,9 +27,7 @@ public enum PeriodicType {
         return lastReset.toLocalDate().isBefore(now.toLocalDate());
 
       case WEEKLY:
-        final ZonedDateTime lastTuesday = lastReset.with(TemporalAdjusters.previousOrSame(Config.resetDay));
-        final ZonedDateTime nextTuesday = lastTuesday.with(TemporalAdjusters.next(Config.resetDay));
-        return now.isEqual(nextTuesday) || now.isAfter(nextTuesday);
+        return now.getDayOfWeek() == Config.resetDay && lastReset.toLocalDate().isBefore(now.toLocalDate());
 
       case MONTHLY:
         return lastReset.getMonthValue() != now.getMonthValue() || lastReset.getYear() != now.getYear();
